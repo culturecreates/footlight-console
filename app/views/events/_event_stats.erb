@@ -1,0 +1,11 @@
+ <div class="columns is-centered has-text-centered">
+
+  <%= render "status_filter", status: "new", icon: INITIAL_ICON, events: @events_to_review, title: "Events to be reviewed before published"%>
+ <%= render "status_filter", status: "updated", icon: UPDATED_ICON, events: @events_with_updates, title: "Events with updates published automatically" %> 
+  <%= render "status_filter", status: "flagged", icon: PROBLEM_ICON, events: @events_with_issues, title: "Events with one or more flags" %> 
+  <%= render "status_filter", status: "commented", icon: MICROPOST_ICON, events: @events_with_comments, title: "Events with comments" %> 
+  <%= render "status_filter", status: "publishable", icon: OK_ICON, events: @events_publishable, title: "Events meeting minimum requirements to be published" %> 
+
+
+  </div>
+  

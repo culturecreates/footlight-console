@@ -1,0 +1,87 @@
+<% if @link_auto_complete.count > 0 %>
+    $("#linker-form-placeholder-<%= "#{@statement_id}" %>").html("<%=  j render "linker_dropdown" %>");
+<% else %>
+    $("#linker-form-placeholder-<%= "#{@statement_id}" %>").html("<%=  j render "linker_autocomplete" %>");
+
+    var template, template_selection;
+
+    function template(item) {
+        let displayHtml = '';
+        if (item.description) {
+            displayHtml = item.text + '<br>' + ' <div class="is-size-7">' + item.description + '</div>';
+        } else {
+            displayHtml = item.text;
+        }
+        return  '<div class="is-size-6">' + displayHtml + '</div>'
+    };
+
+    function template_selection(item) {
+        return item.text;
+    };
+
+
+    $('#uri').select2({
+        ajax: {
+            url: $('#recon_url').val(),
+            data: function(params) {
+                let search_class = $('#recon_type').val();
+                return {
+                    query: params.term,
+                    type: search_class
+                };
+            },
+            dataType: 'json',
+            delay: 500,
+            processResults: function(data, params) {
+                <% if current_user&.admin? && @recon_name == "Footlight" %>
+                    $("#search_string").text(params.term); // store the original search string
+                    data.result.push({ name: 'Create new...'});
+                <% end %>
+                return {
+                    results: _.map(data.result, function(el) {
+                        let uri = "create_new";
+                        if (el.id) {
+                            if (el.id.startsWith("http") && el.id) { 
+                                uri = el.id + '---' + el.name;
+                            } else {
+                                uri = $('#recon_prefix').val()  + el.id + '---' + el.name;
+                            } 
+                        }
+                       
+                        return {
+                            text: el.name,
+                            id: uri,
+                            score: el.score,
+                            description: el.description,
+                            description: el.description
+                        };
+                    })
+                };
+            },
+            cache: true
+        },
+        escapeMarkup: function(markup) {
+            return markup;
+        },
+        minimumInputLength: 2,
+        templateResult: template,
+        templateSelection: template_selection,
+        placeholder: "Search  <%= @recon_name %> <%= @expected_class %>",
+        allowClear: true
+    });
+
+    $('#uri').on('select2:select', function (e) {
+        var data = e.params.data;
+        var originalStr = $('#search_string').text(); // get the original search string
+
+        if (data.id == "create_new") {
+            $("#linker-form-placeholder-<%= "#{@statement_id}" %>").html("<%=  j render 'new_resource' %>");
+            $("#name").val(originalStr);
+        }
+
+    });
+
+
+
+
+<% end %>

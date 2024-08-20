@@ -1,0 +1,89 @@
+<% multiple_events = false if multiple_events.nil?  %>
+<div class="metadata">
+  <% if stat["id"].blank? %>
+    <p class='is-size-6'>
+      Event key missing
+    </p>
+  <% else %>
+    <!-- section with butons -->
+    <span class="level is-mobile pull-left">
+      <!-- Review button -->
+      <%= link_to review_statement_path(id: stat["id"]), method: :patch, remote: true, class: "button is-success"  do %>
+        <i class="fa <%= OK_ICON %> fa-lg"></i>
+      <% end %>
+      <!-- Alternatives button -->
+      <% if count_alternatives(stat["alternatives"]) > 0 %>
+        <a id="alternatives-<%= stat["id"] %>" class="button open-modal-button">
+          <%= pluralize(count_alternatives(stat["alternatives"]) + 1, 'Source') %>
+        </a>
+        <div id="alternatives-<%= stat["id"] %>-modal" class="modal">
+          <div class="modal-background"></div>
+          <div class="modal-content">
+            <%= render partial: "alternatives", locals: { stat: stat, multiple_events: multiple_events} %>
+          </div>
+          <button class="modal-close is-large" aria-label="close"></button>
+        </div>
+      <% end %>
+      <!-- Add link button -->
+      <% if stat["datatype"] == "xsd:anyURI" %>
+        <%= link_to "Add", linked_data_linker_path(expected_class: stat["expected_class"].split(',')[0], statement_id: stat["id"]), remote: true, class: "button" %>
+      <% end %>
+      <!-- Flag button -->
+      <%= link_to new_micropost_path(statement_id: stat["id"], key: make_key(stat['label'], stat['language']), subject_uri: stat['subject']), remote: true, class: 'button is-danger' do %>
+        <i class="fa <%= PROBLEM_ICON %> fa-lg"></i>
+      <% end %>
+      <!-- Logs button -->
+      <a id="logs-<%= stat["id"]  %>" class="button open-modal-button" > 
+        <i class="fa  fa-calendar fa-lg"></i>
+      </a>
+      <div id="logs-<%= stat["id"]  %>-modal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+          <%= render partial: "date_log", locals: { stat: stat} %>
+        </div>
+        <button class="modal-close is-large" aria-label="close"></button>
+      </div>
+      <!-- Edit button -->
+      <% if stat["datatype"] != "xsd:anyURI" && stat["datatype"] != "xsd:dateTime"  %>
+        <%= link_to edit_manual_statement_path(statement_id: stat["id"], manual_statement_id: stat["id"]), remote: true, class: 'button' do %>
+          <i class="fa <%= EDIT_ICON %> fa-lg"></i>
+        <% end %>
+      <% end %>
+      <!-- Add date button -->
+      <% if stat["datatype"] == "xsd:dateTime"  %>
+        <% if has_manual_source_available(stat)  %>
+          <a id="add-date-<%= stat["id"] %>" class="button show-div-button">Add Date</a>
+          <div id="add-date-<%= stat["id"] %>-div" style="display:none;">
+            <%= form_tag(save_manual_statement_path(timezone: @event_timezone, merge_with: stat['value'], id:  get_manual_statement_id(stat), old_statement_id: stat['id']), method: :patch, remote: true) do -%>
+              <div class="field is-horizontal">
+                <a id="date-<%= stat["id"] %>" class='button is-active hide-div-button' >Add Date</a>
+                <%= date_field_tag('value',date_field_default(stat['value']), class: 'control is-size-5') %> 
+                <%= submit_tag 'Save', class: 'button  is-primary' %>
+                  &nbsp;
+              </div>
+            <% end -%>
+          </div>
+          <a id="add-datetime-<%= stat["id"] %>" class="button show-div-button">Add Date/Time</a>
+          <div id="add-datetime-<%= stat["id"] %>-div" style="display:none;">
+            <%= form_tag(save_manual_statement_path(timezone: @event_timezone, merge_with: stat['value'], id: get_manual_statement_id(stat), old_statement_id: stat['id']), method: :patch, remote: true) do -%>
+              <div class="field is-horizontal">
+                <a id="datetime-<%= stat["id"] %>" class='button is-active hide-div-button' >Add DateTime</a>
+                <%= datetime_local_field_tag('value',datetime_field_default(stat['value']), class: 'control is-size-5') %> 
+                <%= submit_tag 'Save', class: 'button  is-primary' %>
+              </div>
+            <% end -%>
+          </div>
+        <% end %>
+      <% end %>
+      <!-- Facet button -->
+      <%= link_to source_id_sources_path(source_id: stat["source_id"]), class: 'button' do %>
+        <i class="fa <%= FACET_ICON %> fa-lg"></i>
+      <% end %>
+    </span>   
+  <% end %> 
+</div> 
+  
+<!-- Place holders -->
+<div id="micropost-form-placeholder-<%= stat["id"]  %>"></div>
+<div id="linker-form-placeholder-<%= stat["id"] %>"></div>
+  

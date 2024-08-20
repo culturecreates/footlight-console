@@ -1,0 +1,11 @@
+<div class="box"> 
+  <% if stat["cache_changed"] &&  stat["manual"] != true %>
+    <%="Last change: " + stat["cache_changed"].to_date.to_formatted_s(:rfc822)  %>
+<% end %>
+
+<% if stat["cache_refreshed"]  &&  stat["manual"] != true %>
+    <%= "<br>".html_safe if stat["cache_changed"] %>
+    <%=  "Last crawl: " + stat["cache_refreshed"].to_date.to_formatted_s(:rfc822) %>
+<% end %>
+<%= "Set manually on #{stat["updated_at"].to_date.to_formatted_s(:rfc822)}" if stat["manual"] == true %>
+</div>

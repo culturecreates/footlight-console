@@ -1,0 +1,46 @@
+<% provide(:title, @user.name) %>
+
+
+<section class="media">
+  <figure class="media-left">
+    <%= gravatar_for @user %>
+    <%= render 'follow_form' if logged_in? %>
+  </figure>
+  <div class="media-content">
+    <div class="content">
+      <h1 class="title">
+        <%= @user.name %><%= ' (admin role)' if  @user.admin%>
+      </h1>
+      <p class="subtitle">
+        <%= @user.email %>
+      </p>
+      <p class="subtitle">
+        Last login:
+        <%= @user.login_at ||= 'Not available'%>
+      </p>
+      <p>
+        <%= render 'shared/stats' %>
+      </p>
+      <br />
+    </div>
+  </div>
+
+</section>
+
+<section>
+  <div class="container">
+
+    <% if @user.microposts.any? %>
+    <h1 class="title">
+      Comments (<%= @user.microposts.count %>)
+    </h1>
+
+
+    <ol class="microposts">
+      <%= render 'microposts/micropost_details', microposts: @microposts %>
+    </ol>
+
+    <% end %>
+
+  </div>
+</section>

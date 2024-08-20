@@ -1,0 +1,34 @@
+<td class="events  <%= 'has_events' if !time.empty? %> weekday">
+  <div>
+    <p class="day">
+      <%= day %>
+      <span class="month"><%= month %> </span>
+      <span class="year"><%= year %></span>
+    </p>
+    <% if !time.empty? %>
+    <ul>
+      <% time.each do |t| %>
+      <li class="is-size-7">
+        <% if show_controls %>
+          <span class="metadata">
+          <%= form_tag(save_manual_statement_path(
+              value: "#{year}-#{month}-#{day}, #{t}", 
+              timezone: @event_timezone, 
+              merge_with: stat['value'], 
+              del?: true, 
+              id: get_manual_statement_id(stat), 
+              old_statement_id: stat['id']), 
+              method: :patch, 
+              remote: true) do -%>
+            <button type="submit" name="commit" value="" class="delete is-small" data-disable-with="x"></button>
+          <% end -%>          
+          </span>
+        <% end %>
+        <%= t %> 
+      </li>
+      <% end %>
+    </ul>
+    <% end %>
+    <p></p>
+  </div>
+</td>

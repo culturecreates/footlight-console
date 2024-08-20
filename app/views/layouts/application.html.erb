@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title><%= full_title(yield(:title)) %></title>
+    <%= csrf_meta_tags %>
+    <%= stylesheet_link_tag    'application', media: 'all',
+                                              'data-turbolinks-track': 'reload' %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+   <script src="https://maps.googleapis.com/maps/api/js?libraries=places&v=beta&key=<%= ENV["GOOGLE_MAPS_API"] %>"></script>
+    <%= render 'layouts/shim' %>
+    <%= render 'layouts/google_analytics' if  !Rails.env.development? && !Rails.env.test? %>
+  </head>
+  <body 
+  <% if content_for?(:body_attributes) %>
+    <%= yield(:body_attributes) %> 
+  <% end %>>
+    <%= render 'layouts/navbar' %>
+      <section class="section">
+
+          <% flash.each do |message_type, message| %>
+
+            <div class="is-size-5 flash-notification notification is-<%= message_type %>">
+              <button class="delete" onclick="javascript:$('.flash-notification').hide()"></button>
+              <%= sanitize(message) %>
+            </div>
+          <% end %>
+
+
+          <%= yield %>
+
+      </section>
+      <%= render 'layouts/footer' %>
+      <%= debug(params) if Rails.env.development? %>
+  </body>
+
+</html>

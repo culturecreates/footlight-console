@@ -1,0 +1,23 @@
+
+<div class="fullscreen">
+  <div class="container">
+     <h1 class="title">
+        Websites
+     </h1>
+     <p class="subtitle">
+      <%= current_user.name %>
+     </p>
+    <ul>
+      <% @websites.each do |website| %>
+        <li><%= link_to website.url, website %> | 
+        <%= link_to "edit", edit_website_path(website) %> | 
+        <%= link_to "delete", website, method: :delete, data: { confirm: "You sure?" } %>
+      <% end %>
+    </ul>
+
+    <br>
+    <% if current_user.admin?  %>
+      <%= link_to "Add website", first_scrape_websites_path, class: "button" %>
+    <% end %>
+  </div>
+</div>

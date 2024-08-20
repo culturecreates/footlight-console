@@ -1,0 +1,78 @@
+<% if  is_valid_condensor_uri(stat['value']) %>
+  <% complete_array = stat['value'] %>
+
+  <% complete_array.each do |uri_set| %>
+    <% if uri_set['search'] != "Manually deleted" %>
+      <% tag_colour = tag_colour(uri_set['class']) %>
+      <% tag_class =  uri_set['class'] %>
+      <div class="metadata">
+        <p class='is-size-6 property'>
+          <%= 'Based on: '.html_safe if uri_set['search'] != "Manually added"   %>
+          <%= sanitize(uri_set['search'].truncate_words(50)) %>
+        </p>
+      </div>
+      <% if uri_set['links'].present? %>
+        <div class="field is-grouped is-grouped-multiline is-clipped">
+          <% uri_set['links'].each do |tag| %>
+            <div class="control">
+              <div class="tags has-addons">
+                <span class="tag is-dark">
+                  <a style="color:white;text-decoration: none;" href="<%= dereferenceable_link(tag['uri'])  %>">
+                  <% if tag_class == "Organization"  %>
+                    Org/Person
+                  <% elsif tag_class == "EventStatusType" || tag_class == "EventStatusType::EventMovedOnline" %>
+                    Event Status
+                  <% elsif tag_class == "EventTypeEnumeration" %>
+                    Type
+                  <% elsif tag_class == "EventAttendanceModeEnumeration" %>
+                    Attendance Mode
+                  <% else %>
+                    <%= tag_class %>
+                  <% end %>
+                  </a>
+                </span>
+                <% max_label_chars = 40 %>
+                <span class="tag is-white <%= "is-danger" if tag['label'].include?('Cancelled') %> <%= "is-warning" if tag['label'].include?('Postponed') %>  <%= "is-info" if tag['label'].include?('Rescheduled') %>"
+                  title="<%=tag['label'] if tag['label'].length > max_label_chars%>">
+                  <%= ' <strike> '.html_safe if check_for_manual_deletion(complete_array, tag['uri']) %>
+                  <% linked_id =  tag['uri'].split('/').last.start_with?(/K|Q/) ?  "(" + tag['uri'].split('/').last + ")" :  "" %>
+                  <% if tag['label'].length > max_label_chars  %>
+                  <%= "..." + tag['label'][-max_label_chars,max_label_chars] + " " + linked_id %>
+                  <% else %>
+                 
+                  <%= tag['label'] %> <%=  linked_id  %>
+                  <% end %>
+                  <%= ' </strike> '.html_safe if check_for_manual_deletion(complete_array, tag['uri']) %>
+                </span>
+                <% if check_for_manual_deletion(complete_array, tag['uri']) %>
+                  <%= link_to "undo",
+                            linked_data_remove_linked_data_path(statement_id: stat['id'], name:  tag['label'] , rdfs_class: tag_class,  uri: tag['uri']),
+                            method: :patch,
+                            remote: true,
+                            class: "tag is-white" %>
+                <% else %>
+                  <%= link_to "",
+                            linked_data_remove_linked_data_path(statement_id: stat['id'], name:  tag['label'] , rdfs_class: tag_class,  uri: tag['uri']),
+                            method: :patch,
+                            remote: true,
+                            class: "tag is-white is-delete" %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% else %>
+  <p class='is-size-6'>
+    No data
+  </p>
+  <% if get_local_uri_label stat['value'].present? %>
+    <div class="metadata">
+      <p class='is-size-6'>
+        <i>Based on: <%= sanitize(get_local_uri_label stat['value'])  %></i>
+      </p>
+    </div>
+  <% end %>
+<% end %>

@@ -1,0 +1,71 @@
+<% if !stat.nil? && !stat['id'].nil? %>
+<% can_edit = true if can_edit.nil? %>
+<% multiple_events = false if multiple_events.nil?  %>
+<div <%= "id=property-#{stat['id']}" if can_edit %>>
+  <%= render partial: "level", locals:{stat: stat} %>
+   <div class="columns  is-multiline inside-property">
+      <div class="column <%= "is-full" if stat['label'] == "Dates" %>">
+        <div class='property is-size-5 is-clipped'>
+          <%= render partial: "display_by_label", locals: {stat: stat, show_controls: true } %>
+        </div>
+        <div class='edit_property' style='display:none'>
+          <%= form_tag(save_manual_statement_path(id: stat['id'], old_statement_id: stat['id']), method: :patch, remote: true) do -%>
+            <div class="field">
+              <p class="control">
+                <textarea id="text-<%= stat['id'] %>" name='value' class="textarea is-size-5"><%= display_statement(stat['value'],'raw') %></textarea>
+              </p>
+            </div>
+            <%= submit_tag 'Save', class: 'button is-primary' %>
+            <%= link_to 'Cancel', cancel_edit_manual_statement_path(statement_id: stat["id"]), remote: true, class: 'button is-secondary' %>
+          <% end -%>
+        </div>
+      </div>
+    
+    <% if stat["alternatives"] %>
+      <% stat["alternatives"].each do |alternative| %>
+        <% if alternative["source_label"]&.include?("*") || (alternative["selected_source"] && alternative["status"] == 'updated' )%>
+          <div class="column"> 
+            <div class="notification is-size-5" >  
+              <% if alternative["selected_source"] && alternative["status"] == 'updated' %>
+             <span class='has-text-info'>
+                <%= MANUAL_ICON.html_safe if alternative["manual"] %>
+                <%= FEED_ICON.html_safe if !alternative["manual"] %> 
+                <%= alternative["label"] %> updated at the source! Would you like to select 
+                <%= link_to 'this source', deactivate_individual_statement_path(id: stat["id"],old_statement_id: stat["id"] ), method: :get, remote: true %>
+                    or 
+                <%= link_to 'ignore', review_statement_path(id: alternative["id"]), method: :patch, remote: true %>?
+               </span>
+              <% end %>
+              <div class="is-size-7 is-pulled-right"> <%=  html_escape(alternative["source_label"]) %> </div>
+             
+              <div class="is-clearfix"></div>
+                <div class='is-size-5 is-clipped'>
+                  <%= render partial: "display_by_label", locals: {stat: alternative,  show_controls: false} %>
+                </div>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+    </div>
+
+ 
+  <% key = make_key stat['label'], stat['language'] %>
+  <% if @microposts_all_statements[stat['subject']] %>
+    <% if @microposts_all_statements[stat['subject']][key] %>
+      <%= render "microposts/micropost", microposts: @microposts_all_statements[stat['subject']][key]  %>
+    <% end %>
+  <% end %>
+  <%= render partial: "metadata", locals:{stat: stat, multiple_events: multiple_events} %>
+
+
+</div>
+
+<% else %>
+<!--statement has no data -->
+  <% if  stat&.[]("alternatives")&.first %>
+    <p> <%= stat["alternatives"].first["label"] %>: No selected source for this property to display. Edit source id <%= stat["alternatives"].first["source_id"] %> and set 'selected' to true. </p>
+  <% else %>
+   <!-- dispaly empty box  -->
+  <% end %>
+<% end %>

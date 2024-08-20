@@ -1,0 +1,20 @@
+<div class="field has-addons is-mobile is-pulled-right">
+  <p class="control">
+    <%= link_to url_upcoming, class: "button use-loading #{'is-focused is-link' if cookies[:timeline] != "all"}"  do %>
+    <span class="icon">
+      <i class="fa fa-hourglass-half"></i>
+    </span>
+    <span>Upcoming</span>
+    <% end %>
+  </p>
+
+  <p class="control">
+    <%= link_to url_all, class: "button use-loading #{'is-focused is-link' if cookies[:timeline] == "all"}"  do %>
+    <span class="icon">
+      <i class="fa fa-hourglass"></i>
+    </span>
+    <span>All dates</span>
+    <% end %>
+  </p>
+
+</div>

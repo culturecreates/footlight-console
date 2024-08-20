@@ -1,0 +1,22 @@
+<div class="field has-addons is-mobile is-pulled-left">
+  <p class="control">
+    <%= link_to events_path(seedurl: cookies[:seedurl],view: "mosaic"), class: "button use-loading #{'is-focused is-link' if cookies[:view] != "list"}"  do %>
+    <span class="icon">
+      <i class="fa fa-th"></i>
+    </span>
+    <% end %>
+  </p>
+
+  <p class="control">
+    <%= link_to events_path(seedurl: cookies[:seedurl],view: "list"), class: "button use-loading #{'is-focused is-link' if cookies[:view] == "list"}"  do %>
+    <span class="icon">
+      <i class="fa fa-list"></i>
+    </span>
+    <% end %>
+  </p>
+</div>
+
+<%= render partial: "timeline", locals: { url_upcoming:  events_path(seedurl: cookies[:seedurl],timeline: "upcoming"), url_all: events_path(seedurl: cookies[:seedurl],timeline: "all")} %>
+
+
+<div class="is-clearfix"></div>

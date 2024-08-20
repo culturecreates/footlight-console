@@ -1,0 +1,36 @@
+
+<div class="fullscreen">
+
+  <div class="columns is-centered">
+    <div class="column is-one-third">
+     <h1 class="title">
+        Your website
+     </h1>
+     <p class="subtitle">
+      Enter your website info
+     </p>
+    <%= form_for(@website) do |f| %>
+      <%= render 'shared/error_messages', object: f.object %>
+      
+      <div class="field">
+         <%= f.label :url, class: 'label' %> 
+        <div class="field has-addons">
+          <a class="button is-static">
+            http://
+          </a>
+           <%= f.text_field :url, value: current_user.email[/.*@(.*)/,1], placeholder: "website",  class: 'input' %>
+         </div>
+      </div>
+
+      <div class="field">
+          <%= f.label :timezone, class: 'label' %> 
+          <%= f.select :timezone, ['','Pacific Time (US & Canada)', 'Mountain Time (US & Canada)','Central Time (US & Canada)','Eastern Time (US & Canada)','Atlantic Time (Canada)','Newfoundland'] %>
+        </div>
+      <br />
+      <center>
+      <%= f.submit "Crawl", class: "button is-large is-primary" %>
+    </center>
+    <% end %>
+  </div>
+  </div>
+</div>

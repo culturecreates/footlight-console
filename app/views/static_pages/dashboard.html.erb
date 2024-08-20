@@ -1,0 +1,84 @@
+<% if logged_in? %>
+
+  <center>
+  <h1 class="title">
+    <%=  t('.your_website').pluralize( @websites.count) %>
+  </h1>
+  <p class="subtitle">
+    <%= current_user.name %>
+  </p>
+  </center>
+  <br>
+    <% if  !@websites.blank? %>
+     <table class="table is-striped is-hoverable is-fullwidth">
+        <thead>
+            <tr>
+                <th><%= t(:website) %> </th>
+                <th><%= t :webpages %></th>
+                <th>Statements</th>
+                <th class="is-hidden-mobile">Activity in the last 24 hours </th>
+                <th><%= t(:flags) %> </th>
+                <th><%= t(:updates) %> </th>
+                <th class="is-hidden-mobile"></th>
+            </tr>
+        </thead>
+        <tbody>
+         <% @websites.each do |website| %>
+            <% condenser_stats = @condenser_websites.select {|condenser| condenser["seedurl"] == website.url}.first  %>
+            <% condenser_stats ||= {} %>
+            <tr>
+              <td>
+                <%= link_to display_website_url(website.url), events_path(seedurl: website.url) %>
+              </td>
+              <td>
+                <%=  condenser_stats["webpages"]  %> </span>
+              </td>
+              <td>
+                <%=  condenser_stats["statements_grouped"]  %>
+              </td>
+              <td class="is-hidden-mobile">
+              <%=  condenser_stats["statements_refreshed_24hr"]  %> statements crawled,  
+              <%=  condenser_stats["statements_updated_24hr"] %> updated.
+              </td>
+               <td>
+                <%=  condenser_stats["flags"]  %>
+              </td>
+               <td>
+                <%=  condenser_stats["updates"]  %>
+              </td>
+              <td class="is-hidden-mobile ">
+                <div class="field has-addons  pull-right">
+                  <p class="control">
+                    <%= link_to "Settings" , edit_website_path(website), class: "button is-info is-small" %>
+                  <p>
+                  <% if current_user.admin?  %>
+                    <p class="control">
+                      <%= link_to "delete", website, method: :delete, data: { confirm: "You sure?" }, class: "button is-danger is-small"%>
+                    </p>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+        <% end %>
+        </tbody>
+      </table>
+    <% end %>
+<% else %>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-body has-text-centered">
+      <%= render 'about_blurb' %>
+      <br>
+      <br>
+      <%= link_to "Join", signup_path, class: "button is-primary is-large" %>
+      <p>
+        <br>
+        Already a member? <%= link_to "Login", login_path %>
+      </p>
+    </div>
+  </div>
+</div>
+
+
+<% end %>

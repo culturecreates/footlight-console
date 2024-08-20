@@ -1,0 +1,16 @@
+<% provide(:title, 'Resources') %>
+<section class="container">
+  <center>
+    <h2 class="title"> <%= t('resources') %> </h2>
+      <h3 class="subtitle"> Linked places, people and organizations created in Footlight </h3>
+  </center>
+  <%= render partial: "table", locals: {name: "Places", rdfs_class: "place"} %>
+  <%= render partial: "table", locals: {name: "People", rdfs_class: "person"} %>
+  <%= render partial: "table", locals: {name: "Organizations", rdfs_class: "organization"} %>
+  <%= render partial: "table", locals: {name: "Event Types", rdfs_class: "event_type"} %>
+
+  <% if current_user&.admin? %>
+  <%= render partial: "table", locals: {name: "Index Pages (admin only)", rdfs_class: "resource_list"} %>
+  <% end %>
+
+</section>

@@ -1,0 +1,23 @@
+<tr>
+  <td>
+    <%= gravatar_for user, size: 50 %>
+  </td>
+  <td>
+    <%= user.login_at %>
+  </td>
+  <td>
+    <%= link_to user.name, user_path(user) %>
+  </td>
+  <td>
+    <a href='mailto:<%= user.email %>'><%= user.email %></a>
+  </td>
+  <td>
+    <%= user.created_at %>
+  </td>
+  <td>
+  <% if current_user.admin? && !current_user?(user) %>
+    <%= link_to "delete", user, method: :delete,
+                                  data: { confirm: "DANGER: this will completely delete the user everywhere in Footlight. You sure?" } %>
+  <% end %>
+  </td>
+<tr>

@@ -1,0 +1,36 @@
+<% provide(:title, "Edit Website") %>
+<div class="fullscreen">
+  <div class="container">
+  <div class="columns  is-centered">
+    <div class="column is-one-third ">
+      <h1 class="title is-centered">Website Settings</h1>
+      <%= form_for(@website) do |f| %>
+        <%= render 'shared/error_messages', object: f.object %>
+
+         <div class="field">
+          <%= f.label :timezone, class: 'label' %> 
+          <%= f.select :timezone, ['','Pacific Time (US & Canada)', 'Mountain Time (US & Canada)','Central Time (US & Canada)','Eastern Time (US & Canada)','Atlantic Time (Canada)','Newfoundland'] %>
+        </div>
+
+        <div class="field">
+          <%= f.label "Display iFrame when viewing events", class: 'label' %>  
+          <%= f.select :iframe, [:true, :false]  %>
+        </div>
+
+        <div class="field">
+          <%= f.label "URL Key", class: 'label' %>
+          <%= f.text_field :url, class: 'input' %>
+        </div>
+
+        <div class="field">
+          <%= f.label :image_ratio, class: 'label' %>  
+          <%= f.select :image_ratio, ['','1:1', '3:1','5:3','16:9'] %>
+        </div>
+        <center>
+          <%= f.submit "Save changes", class: "button is-primary is-large" %>
+        </center>
+      <% end %>
+    </div>
+  </div>
+  </div>
+</div>

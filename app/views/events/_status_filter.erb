@@ -1,0 +1,10 @@
+<div id="filter-<%= status %>" title="<%= title %>"
+    class="column is-one-fifth statement is-size-4 is-unselectable <%= 'filter_active' if cookies[:filter] == "#{status}" %>">
+    <i class="fa <%= icon %>"></i><%= " #{events.count} #{status}" %> 
+    <% if events.count > 0 %>
+    <div class="metadata">
+    <% cookies[:filter] == "#{status}" ? action = ["Remove filter", "all"] : action = ["Filter", "#{status}"]   %>
+    <%= link_to action[0], events_path(seedurl: cookies[:seedurl], filter: action[1]), class: 'button use-loading is-small is-link' %>
+    </div>
+    <% end %>
+</div>

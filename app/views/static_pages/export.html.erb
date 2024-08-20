@@ -1,0 +1,114 @@
+<% provide(:title, "Code Snippet") %>
+<% content_for(:body_attributes) do %>
+    data-turbolinks="false"
+<% end %>
+
+<div class="container">
+  <h1 class="title is-2">
+    Extrait de code - Code Snippet
+  </h1>
+  <p class="subtitle">
+    Publiez des données structurées sur votre site Web - Publish structured data to your website
+  </p>
+  <section class="section">
+    <p class="title is-3">
+      À propos de l'extrait de code - About the Code Snippet
+    </p>
+    <p>
+    L'extrait de code Footlight ajoute des métadonnées descriptives (données structurées lisibles par machine) dans vos pages Web. Ces données structurées ne sont pas affichées et ne sont visibles que pour ceux qui utilisent des outils d'inspection Web. Cet extrait de code fonctionne conjointement avec la console Footlight.
+    </p>
+    <br>
+    <p>
+     The Footlight code snippet injects descriptive metadata — machined-readable structured data —  into your webpages. This structured data is not displayed on your webpage and is only visible to those who use web inspect tools. The code snippet works hand-in-hand with the Footlight console.
+    </p>
+  </section>
+
+  <section class="section">
+    <p class="title is-3">
+      Installation de l'extrait de code - Installing the Code Snippet
+    </p>
+    <p>
+    Copiez/collez le code Javascript suivant dans l'en-tête de toutes les pages de votre site Web (<a
+        href="https://docs.google.com/document/d/16PjkLCwSn9kY_pAr1UTSMUdsOrw_Pyc6jiQIpw8B0h8/edit?usp=sharing">voir documentation complète</a>). Pour vérifier l'installation, recherchez
+le script "event-markup" dans la ou les page(s) Web.
+  </p>
+  <br>
+  
+    <p>
+      Copy/paste the following javascript into the header of all pages of your website. Full documentation is <a
+        href="https://docs.google.com/document/d/16PjkLCwSn9kY_pAr1UTSMUdsOrw_Pyc6jiQIpw8B0h8/edit?usp=sharing"> here
+      </a>. To verify installation check your webpage for the "event-markup" script.  
+    </p>
+    <br>
+    <pre><code class="html"><%= html_escape("<script>
+  (function(i,s,o,g,r,a,m){a=s.createElement(o),m=s.getElementsByTagName(o)[0];a.async=1;a.src= g+'?url='+encodeURIComponent(i.location);m.parentNode.insertBefore(a,m)})(window,document,'script', 'https://graph.culturecreates.com/footlight/v2/event-markup');
+</script>")%></code></pre>
+    <br>
+  </section>
+
+  <section class="section">
+    <p class="title is-3">
+      État de l'extrait de code - Code Snippet Status
+    </p>
+
+    <div class='level box is-info'>
+      <div class="level-item has-text-centered">
+        <div>
+          <% if code_snippet_installed? %>
+                   <span class="icon is-large has-text-success">
+            <i class="fa fa-check fa-3x"></i>
+          </span>
+          <p class="heading is-size-3"> Installé - Installed</p>
+           <p> L'extrait de code est installé sur votre site Web</p>
+          <p> The code snippet is installed on your website</p>
+         
+          <% else %>
+
+           <span class="icon is-large has-text-warning">
+            <i class="fa fa-ban fa-3x"></i>
+          </span>
+          <p class="heading is-size-3">N'est pas installé - Not installed</p>
+          <p> L'extrait de code n'est pas installé sur votre site Web</p>
+          <p> The code snippet is not installed on your website</p>
+          
+
+          <% end %>
+        </div>
+        <%# <div class="level-item has-text-centered">
+            <div>
+            
+              <span class="icon is-large has-text-warning">
+                <i class="fa fa-ban fa-3x"></i>
+              </span>
+              <p class="heading is-size-3">Activated</p>
+              <p> This indicates if the code snippet <br> is switched on/off</p>
+            </div %>
+      </div>
+      <!--div class="level-item has-text-centered">
+        <div>
+          <% if code_snippet_working? %>
+          <span class="icon is-large has-text-success">
+            <i class="fa fa-check fa-3x"></i>
+          </span>
+          <p class="heading is-size-3">Sending</p>
+          <p> The code snippet <br> is running and sending structured data</p>
+          <% else %>
+          <span class="icon is-large has-text-warning">
+            <i class="fa fa-ban fa-3x"></i>
+          </span>
+          <p class="heading is-size-3">Not sending data</p>
+          <p> The code snippet <br> is not sending data to your website</p>
+          <% end %>
+        </div>
+      </div-->
+    </div>
+
+    <%# <div class='level'>
+        <div class="button level-item is-large">switch on</div>
+        <div class="button level-item is-large is-danger is-focused">switch off</div>
+      </div> %>
+
+  Webpage checked:
+  <%=  @url_to_test_code_snippet%>
+  </section>
+</div>

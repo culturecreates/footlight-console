@@ -1,0 +1,25 @@
+<% if current_user&.admin? %>
+  <div class='box'>
+     <h1 class="title is-6"> Admin tools</h1>
+     <p>
+     View in <a href="<%= condenser_url_per_environment %>/statements.html?rdf_uri=<%= subject_uri  %>&seedurl=<%= seedurl %>">Condenser</a> 
+     |  <a href="https://kg.artsdata.ca/entity.html?uri=<%= subject_uri.gsub("footlight:","http://kg.footlight.io/resource/")  %>">Artsdata</a> 
+      </p>
+      <p>
+
+        <%  if webpage_url %>
+        Preview JSON-LD:
+        <%= link_to "Artsdata", "#{condenser_url_per_environment}/graphs/webpage/event-artsdata.jsonld?url=#{CGI.escape(webpage_url)}" %> 
+        | <%= link_to "CMS Aggregator", "http://api.artsdata.ca/query?sparql=query_footlight_event_uri&uri=#{ subject_uri.gsub("footlight:","http://kg.footlight.io/resource/")}&frame=event_footlight&format=json&source=http://kg.artsdata.ca/culture-creates/footlight/#{seedurl}" %> 
+        | <%= link_to "Code Snippet", "#{condenser_url_per_environment}/graphs/webpage/event.jsonld?url=#{CGI.escape(webpage_url)}" %> 
+        | <%= link_to "Code Snippet on Google", "https://search.google.com/test/rich-results?url=#{CGI.escape(webpage_url)}" %> 
+        <% end %>
+       <%  if webpage_url_fr && (webpage_url_fr != webpage_url) %>
+          |
+          <%= link_to "Code Snippet@fr", "#{condenser_url_per_environment}/graphs/webpage/event.jsonld?url=#{CGI.escape(webpage_url_fr)}"%> 
+          | <%= link_to "Code Snippet on Google@fr", "https://search.google.com/test/rich-results?url=#{CGI.escape(webpage_url_fr)}"%> 
+        <% end %> 
+      </p>
+  </div>
+
+<% end %>

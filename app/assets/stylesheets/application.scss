@@ -1,0 +1,92 @@
+/*
+ * This is a manifest file that'll be compiled into application.css, which will include all the files
+ * listed below.
+ *
+ * Any CSS and SCSS file within this directory, lib/assets/stylesheets, vendor/assets/stylesheets,
+ * or any plugin's vendor/assets/stylesheets directory can be referenced here using a relative path.
+ *
+ * You're free to add application-wide styles to this file and they'll appear at the bottom of the
+ * compiled file so the styles you add here take precedence over styles defined in any other CSS/SCSS
+ * files in this directory. Styles in this file should be added after the last require_* statement.
+ * It is generally better to create a new file per style scope.
+ *
+ *= require_tree .
+ *= require_self
+ */
+
+ /*
+  *= require font-awesome
+  */
+
+// Select2 is a plugin to turn generic select fields into beautiful and powerful controls, whereas Underscore.js will provide some convenient methods
+@import 'select2';
+
+// Import a Google Font
+@import url('https://fonts.googleapis.com/css?family=Oswald:400,700');
+
+ // Update Bulma's global variables
+ $family-sans-serif: "Oswald", sans-serif;
+ $box-shadow: 0 5px 3px rgba(black, 0.3);
+
+ // 1. Import the initial variables
+@import "sass/utilities/initial-variables";
+@import "sass/utilities/functions";
+ $table-row-active-background-color: $grey-darker;
+
+
+ @import "bulma";
+
+
+ .debug_dump {
+   clear: both;
+   float: left;
+   width: 100%;
+   margin-top: 45px;
+ }
+
+ body {
+  background-image: url(image_path("paper.jpg"));
+  background-repeat:repeat;
+
+ }
+
+ footer {
+   border-top: 1px dashed white;
+   background-image: url(image_path("paper.jpg"));
+   background-repeat:repeat;
+ }
+
+ .fullscreen {
+   height:70vh;
+   width: auto;
+ }
+
+
+.is-overlay {
+  pointer-events: none;
+}
+
+figure.image {
+  background-color: lightgray;
+}
+
+.navbar-brand {
+  width: 100%;
+  background-color: black;
+}
+
+.navbar {
+  flex-wrap: wrap;
+}
+
+.navbar-brand {
+  justify-content: space-between;
+}
+
+
+.card {
+
+  .tabs {
+    margin-bottom: 0  
+  }
+}

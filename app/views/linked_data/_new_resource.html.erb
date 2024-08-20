@@ -1,0 +1,124 @@
+
+<div class="card linker_form">
+  <header class="card-header">
+    <p class="card-header-title">
+      New <%= @expected_class %>
+    </p>
+  </header>
+  <div class="card-content"> 
+    <%= form_tag(linked_data_create_resource_path(statement_id: @statement_id), method: :post, remote: true) do -%>
+      <%= hidden_field_tag 'rdfs_class', @expected_class %>
+      <%= hidden_field_tag 'seedurl', cookies[:seedurl] %>
+    <div class="field has-addons">
+      <p class="control" style='width: 90%;'>
+        <%= text_field_tag 'name', '', placeholder: 'name',  class: 'input' %>
+      </p>
+      <p class="control">
+        <div class="select">
+          <select name='name_lang'>
+            <option>en</option>
+            <option>fr</option>
+          </select>
+        </div>
+      </p>
+    </div>
+    <% if @expected_class == "Person" %>
+      <div class="field">
+        <p class="control">
+          <%= text_field_tag 'occupation', '', placeholder: 'occupation', style: 'width: 100%;',  class: 'input' %>
+        </p>
+      </div>
+    <% elsif @expected_class == "Organization"%>
+     <div class="field">
+        <p class="control">
+          <%= text_field_tag 'url', '', placeholder: 'Url', style: 'width: 100%;',  class: 'input' %>
+         </p>
+      </div>
+    <% elsif @expected_class == "Place"%>
+      <div class="field">
+        <p class="control">
+          <%= select_tag 'address', '', class: 'adress-autocomplete', style: 'width: 100%;' %>
+         </p>
+      </div>
+    <% end %>
+    <%= submit_tag 'Create', class: 'button is-primary' %>
+    <div class='button is-secondary'>Cancel</div>
+    <% end -%>
+  </div>
+</div>
+
+<script>
+ $.fn.select2.amd.define('select2/data/googleAutocompleteAdapter', ['select2/data/array', 'select2/utils'],
+    function (ArrayAdapter, Utils) {
+        function GoogleAutocompleteDataAdapter ($element, options) {
+            GoogleAutocompleteDataAdapter.__super__.constructor.call(this, $element, options);
+        }
+
+        Utils.Extend(GoogleAutocompleteDataAdapter, ArrayAdapter);
+
+        GoogleAutocompleteDataAdapter.prototype.query = function (params, callback) {
+            var returnSuggestions = function(predictions, status)
+            {
+                var data = {results: []};
+                if (status != google.maps.places.PlacesServiceStatus.OK) {
+                    callback(data);
+                }
+                for(var i = 0; i< predictions.length; i++)
+                {
+                    data.results.push({id:predictions[i].place_id, text: predictions[i].description});
+                }
+               data.results.push({id:' ', text: 'Powered by Google', disabled: true});
+                callback(data);
+            };
+
+            if(params.term && params.term != '')
+            {
+                var service = new google.maps.places.AutocompleteService();
+              //  var sydney = new google.maps.LatLng(-33.867, 151.195);
+                service.getPlacePredictions({ input: params.term , language: 'fr',   fields: ["address_components", "geometry", "icon", "name"], componentRestrictions: { country: "ca" }}, returnSuggestions);
+            }
+            else
+            {
+                var data = {results: []};
+                data.results.push({id:' ', text: 'Powered by Google', disabled: true});
+                callback(data);
+            }
+        };
+        return GoogleAutocompleteDataAdapter;
+    }
+);
+function formatRepo (repo) {
+    if (repo.loading) {
+        return repo.text;
+    }
+    var markup = "<div class='select2-result-repository clearfix'>" +
+        "<div class='select2-result-title'>" + repo.text  + "</div>";
+    return markup;
+}
+
+function formatRepoSelection (repo) {
+    return repo.text;
+}
+
+var googleAutocompleteAdapter = $.fn.select2.amd.require('select2/data/googleAutocompleteAdapter');
+
+
+  $('.adress-autocomplete').select2({
+      width: '100%',
+      dataAdapter: googleAutocompleteAdapter,
+      placeholder: 'Search Address',
+      escapeMarkup: function (markup) { return markup; }, 
+      minimumInputLength: 2,
+      templateResult: formatRepo,
+      templateSelection: formatRepoSelection
+  });
+
+   $('.adress-autocomplete').on('select2:select', function (e) {
+        //var data = e.params.data;
+       console.log(e.params.data);
+      //  var full_details = places.getDetails(data.id)
+      //   console.log(full_details);
+    });
+
+
+</script>

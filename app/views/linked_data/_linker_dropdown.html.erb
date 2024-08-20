@@ -1,0 +1,24 @@
+
+  <div class="dropdown is-hoverable linker_form">
+    <div class="dropdown-trigger">
+      <button class="button" aria-haspopup="true" aria-controls="dropdown-menu4">
+      <span>Select one</span>
+        <span class="icon is-small">
+          <i class="fa fa-angle-down" aria-hidden="true"></i>
+        </span>
+
+      </button>
+    </div>
+    
+    <div class="dropdown-menu" id="dropdown-menu4" role="menu">
+      <div class="dropdown-content">
+        <% @link_auto_complete.each do |l| %>
+          <%= link_to l[:label],
+                      linked_data_add_linked_data_path(key: @key, statement_id: @statement_id, name: l[:label] , rdfs_class: @expected_class,  uri: l[:value]),
+                      method: :patch,
+                      remote: true,
+                      class: "dropdown-item"  %>
+        <% end %>
+      </div>
+    </div>
+  </div>

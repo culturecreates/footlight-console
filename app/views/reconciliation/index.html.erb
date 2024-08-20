@@ -1,0 +1,53 @@
+<%
+=begin%>
+ <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script> 
+<%
+=end%>
+<%
+=begin%>
+ 
+<script src="https://maps.googleapis.com/maps/api/js?libraries=places&v=beta&key=<%= ENV["GOOGLE_MAPS_API"] %>"></script> 
+<%
+=end%>
+
+<div id="container">
+  <h2>Search for something</h2>
+  <select class="adress-autocomplete"></select>
+</div>
+
+
+
+
+<h1>Artsdata</h1>
+<%= form_tag '' do %>
+  <%= select_tag 'uri', '', style: 'width: 50%;' %>
+  <%= submit_tag 'Link', class: 'button primary' %>
+<% end %>
+<button id="check1">Check </button>
+
+<h1>Google Places</h1>
+
+<%= form_tag '' do %>
+  <%= select_tag 'address-google', '', class: 'adress-autocomplete',style: 'width: 50%;' %>
+  <%= submit_tag 'Link', class: 'button primary' %>
+<% end %>
+<button id="check2">Check </button>
+
+<script>
+$('#check1').on('click', function (e) {
+      e.stopPropagation();
+      data = $('#address-google').select2('data')
+      console.log(data);
+     //alert(data[0].id)
+  });
+
+  $('#check2').on('click', function (e) {
+      e.stopPropagation();
+      data = $('#address-google').select2('data')
+      console.log(data);
+     //alert(data[0].id)
+  });
+
+</script>
+

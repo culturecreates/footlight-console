@@ -1,0 +1,8 @@
+<% if stat["manual"] && stat["source_is_feed"] %>
+    <%= form_with url: reconnect_feed_statement_path(id: stat["id"]), method: :get, remote: true do |f| %>
+      <%=  button_tag type: 'submit',class:  "button is-secondary is-light" do %>
+        <span>Reconnect</span>
+        <%= FEED_ICON.html_safe %>
+      <% end %>
+    <% end %>
+<% end %>

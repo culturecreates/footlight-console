@@ -1,0 +1,60 @@
+<nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+ 
+  <div class="navbar-brand">
+    <div class="navbar-item">
+      Footlight Console <%= "  >  #{display_website_url(cookies[:seedurl])}" if !cookies[:seedurl].blank? %>
+    </div>
+    <a href="/" role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+      <span aria-hidden="true"></span>
+       <span aria-hidden="true"></span>
+       <span aria-hidden="true"></span>
+
+    </a>
+  </div>
+
+  <div class="navbar-menu"  id="navbarMenu">
+  <!-- navbar start, navbar end -->
+    <div class="navbar-start">
+        <!-- navbar items -->
+         <% if logged_in? && !cookies[:seedurl].blank? %>
+          <%= link_to "Your website", dashboard_path, class:"navbar-item"%>
+          <%= link_to "Events", events_path(page: cookies[:page],seedurl: cookies[:seedurl], filter: cookies[:filter]), class: "navbar-item" %>
+          <%= link_to "Properties" , sources_path(seedurl: cookies[:seedurl]), class: "navbar-item " %> 
+          <%= link_to "Comments" , microposts_path(seedurl: cookies[:seedurl]), class: "navbar-item" %> 
+          <% if current_user&.admin? %>
+           <%= link_to "Resources" , resource_index_path(seedurl: cookies[:seedurl]), class: "navbar-item" %> 
+          <% end %>
+         <% end %>
+  
+    </div>
+    <div class="navbar-end">
+      <!-- navbar items -->
+      <% if logged_in? %>
+        <div class="navbar-item has-dropdown  is-hoverable">
+          <a class="navbar-link">
+            Account
+          </a>
+          <div class="navbar-dropdown">
+            <!-- Other navbar items -->
+             <%= link_to "Profile ", edit_user_path(current_user), class:"navbar-item"%>
+            <% if !cookies[:seedurl].blank? %>
+                <%= link_to "Code Snippet", export_path(seedurl: cookies[:seedurl]), class: "navbar-item" %>
+            <% end %>
+            <%= link_to "About", about_path, class:"navbar-item"%>
+            <% if current_user.admin?  %>
+              <hr class="navbar-divider">
+              <%= link_to "Add website", first_scrape_websites_path, class: "navbar-item" %>
+              <%= link_to "Admin", current_user, class:"navbar-item"%>
+              <%= link_to 'All users', users_path, class:"navbar-item" %>
+            <% end %>
+            <hr class="navbar-divider">
+            <%= link_to "Log out", logout_path, method: :delete, class:"navbar-item"%>     
+          </div>
+        </div>
+      <% else %>
+        <%= link_to "Login", login_path, class:"navbar-item"%>
+      <% end %>
+    </div>
+  </div>
+</nav>
+

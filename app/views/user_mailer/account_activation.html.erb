@@ -1,0 +1,33 @@
+<h1>Console Footlight</h1>
+
+Bonjour <%= @user.name %>,
+<p>
+Bienvenue sur Footlight. La suite d'outils de Footlight intègre la dernière technologie sémantique pour assurer la lisibilité par machine, la traçabilité et le plus haut niveau de qualité des données sur les événements artistiques et culturels.
+</p><p>
+Veuillez cliquer sur le lien pour activer votre profil.
+</p>
+<%= link_to "Activer", edit_account_activation_url(@user.activation_token, email: @user.email) %>
+
+<p>
+Merci,<br />
+L’équipe de la Culture crée
+</p>
+
+<hr>
+
+
+<h1>Footlight Console</h1>
+<p>
+Hello  <%= @user.name %>,
+</p>
+<p>
+Welcome to Footlight. Footlight’s suite of tools integrates the latest semantic technology to ensure machine-readability, traceability, and the highest level of quality for data about events happening arts and culture.
+</p>
+<p>
+Please click the link to activate your profile.
+</p>
+<%= link_to "Activate", edit_account_activation_url(@user.activation_token, email: @user.email) %>
+<p>
+Best,<br />
+The Culture Creates Team
+</p>

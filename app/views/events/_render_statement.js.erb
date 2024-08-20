@@ -1,0 +1,27 @@
+
+$("#property-<%= stat['id'] %>").replaceWith("<%= j render partial: 'statement', locals: {stat: stat} %>");
+$('.statement').removeClass("statement_open");
+
+$('.open-modal-button').click(function() {
+  let modalId = $(this).attr( 'id' ) + '-modal';
+  $('#' + modalId).addClass( 'is-active' );
+});
+
+$('.modal-close').click(function() {
+  console.log("closing modal")
+  $('.modal').removeClass('is-active');
+});
+
+  $('.show-div-button').click(function() {
+    let divId = $(this).attr( 'id' ) + '-div';
+    $('#' + divId).show();
+    $(this).hide();
+  });
+
+
+  $('.hide-div-button').click(function() {
+    let divId = $(this).attr( 'id' ) + '-div';
+    $('#add-' + divId).hide();
+    let buttonId = $(this).attr( 'id' )
+    $('#add-' + buttonId).show();
+  });

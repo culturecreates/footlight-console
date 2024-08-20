@@ -1,0 +1,64 @@
+// Place all the styles related to the Users controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+
+/* Users index */
+
+
+#error_explanation {
+  ul {
+    list-style: circle;
+  }
+  li {
+    margin-left: 1.5rem;
+  }
+}
+
+.users {
+
+  margin: 0;
+  li {
+    overflow: auto;
+    padding: 10px 0;
+    border-bottom: 1px solid grey;
+  }
+}
+
+
+
+.stats {
+  overflow: auto;
+  margin-top: 0;
+  padding: 0;
+  a {
+    float: left;
+    padding: 0 10px;
+    border-left: 1px solid grey;
+    color: gray;
+    &:first-child {
+      padding-left: 0;
+      border: 0;
+    }
+    &:hover {
+      text-decoration: none;
+      color: blue;
+    }
+  }
+  strong {
+    display: block;
+  }
+}
+
+.user_avatars {
+  overflow: auto;
+  margin-top: 10px;
+
+  a {
+    padding: 0;
+  }
+}
+
+.users.follow {
+  padding: 0;
+}

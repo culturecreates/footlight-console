@@ -1,0 +1,27 @@
+
+<section>
+  <div class="container">
+
+    <% if @microposts.any? %>
+        <h1 class="title">
+          <%= "#{@microposts.count} Comments".pluralize(@microposts.count) %> for upcoming events
+        </h1>
+        <h2 class="subtitle">
+         <%= @seedurl %>
+        </h2>
+          <ol class="microposts">
+            <%= render 'microposts/micropost_details', microposts: @microposts %>
+          </ol>
+    <% else %>
+    <center>
+        <h1 class="title">
+            No comments on upcoming events
+        </h1>
+         <h2 class="subtitle">
+            To find comments on past events please use the Event list filtered with "All dates"
+        </h2>
+        </center>
+    <% end %>
+
+  </div>
+</section>

@@ -1,0 +1,43 @@
+<div class="level is-mobile">
+  <div class="level-left">
+    <div class="level-item">
+      <span class='icon status-icon'>
+          <i class="fa <%= set_status_icon stat['status'] %> fa-lg" id="status-icon-<%= stat['id'] %>"></i>
+      </span>
+    </div>
+    <div class="level-item">
+        <p class="is-size-5 property-label is-unselectable">
+          <%= stat['label'] %> 
+          <%= "@fr" if stat['language'] == "fr" %>
+          <%= "@en" if stat['language'] == "en" %>
+          <!--%= "*" if  stat['label'] == "Location" || stat['label'] == "Title" || stat['label'] == "Dates" %-->
+        </p>
+    </div>
+    <% if stat["label"] == "Webpage link" %>
+      <div class="level-item">
+        <%= link_to "Test JSON-LD",  "https://validator.schema.org/#url=https://footlight-condenser.herokuapp.com/graphs/webpage/event.jsonld?url=#{CGI.escape(stat['value'])}", class: "tag is-primary " %> 
+      </div>
+    <% end %>
+    <% if stat["selected_individual"] && !stat["selected_source"] %>
+      <div class="level-item">
+        <div class="tag is-warning"> Custom Source </div>
+      </div>
+    <% end %>
+    <%= MANUAL_ICON.html_safe if stat["manual"] %>
+    <%= FEED_ICON.html_safe if !stat["manual"] %>
+  </div>
+
+  <% if stat["selected_individual"] %>
+  <div class="level-right">
+    <div class="info-icon">
+      <div class="level-item">
+        <div class="help-tip">
+          <i class="fa fa-info-circle fa-lg"></i>
+          <p class="is-size-5 box"><%= get_help_tip(stat['label'], stat['language']).html_safe %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% end %>
+
+</div>

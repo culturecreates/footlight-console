@@ -1,0 +1,85 @@
+<% multiple_events = false if multiple_events.nil?  %>
+<div class="box">
+  <div class="subtitle"> Selected Source </div>
+  <div class='columns'>
+    <div class="column">
+      <div class="notification is-size-5">
+      <% if stat["selected_individual"] && !stat["selected_source"] %>
+        <div class="tag is-warning is-pulled-left"> Custom Source </div>
+      <% end %>
+      <%= MANUAL_ICON.html_safe if stat["manual"] %>
+      <%= FEED_ICON.html_safe if !stat["manual"] %>
+        <div class="is-size-7 is-pulled-right"> <%=  html_escape(stat["source_label"]) %> </div>
+        <div class="is-clearfix"></div>
+        <div class="block" >
+          <%= render partial: "display_by_label", locals: {stat: stat, show_controls: false}%>
+        </div>
+        <div class="level">
+          <div class="level-left">
+            <% if stat["selected_individual"]  && !stat["selected_source"]%>
+              <div class="level-item">
+                <%= form_with url: deactivate_individual_statement_path(id: stat["id"]), method: :get, remote: true do |f| %>
+                  <%=  hidden_field_tag  "old_statement_id", stat["id"]  %> 
+                  <%=  f.submit "Unselect", class:  "button is-primary" %>
+                <% end %>
+              </div>
+              <div class="is-clearfix"></div>
+            <% end %>
+          </div>
+          <div class="level-right">
+            <%= render partial: "alternatives_reconnect_form", locals: {stat: stat} %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subtitle"> <%= 'Alternative Source'.pluralize(stat["alternatives"].count) %> </div>
+
+  <% stat["alternatives"].each do |alt| %>
+    <%  if (alt['manual'] && !alt['value'].present?) %>
+      <p class="control">
+        <%= form_with url: activate_individual_statement_path(id: alt["id"]), method: :get, remote: true do |f| %>
+          <%=  hidden_field_tag  "old_statement_id", stat["id"]  %> 
+          <%=  f.submit "Add Manual Source", class:  "button is-secondary" %>
+        <% end %>
+      </p>
+      <br>
+    <% else %>
+    <div class='columns'>
+      <div class="column">
+        <div class="notification is-size-5">
+          <%= MANUAL_ICON.html_safe if alt["manual"] %>
+          <%= FEED_ICON.html_safe if !alt["manual"] %>
+          <div class="is-size-7 is-pulled-right"> <%=  html_escape(alt["source_label"]) %> </div>
+          <div class="is-clearfix"></div>
+          <div class="block">
+            <%= render partial: "display_by_label", locals: {stat: alt, show_controls: false}%>  
+          </div>
+          <div class="level">
+            <div class="level-left">
+              <%  disable_button = alt["selected_source"]  ? true : false %>
+              <div class="level-item">
+                <%= form_with url: activate_statement_path(id: alt["id"]), method: :get, data: { confirm: "This will update all events." }, remote: true do |f| %>
+                  <%=  hidden_field_tag  "old_statement_id", stat["id"]  %>
+                  <%=  hidden_field_tag  "multiple_events", multiple_events %>
+                  <%=  f.submit "Select", class:  "disabled button is-primary", disabled: disable_button %>    
+                <% end %>
+              </div>
+              <div class="level-item">
+                <%= form_with url: activate_individual_statement_path(id: alt["id"]), method: :get, remote: true do |f| %>
+                  <%=  hidden_field_tag  "old_statement_id", stat["id"]  %> 
+                  <%=  f.submit "This event only", class:  "button is-secondary", disabled: disable_button  %>
+                <% end %>
+              </div>
+            </div>
+            <div class="level-right">
+              <%= render partial: "alternatives_reconnect_form", locals: {stat: alt} %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <% end %>
+  <% end %>
+</div>

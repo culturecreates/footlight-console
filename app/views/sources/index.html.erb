@@ -1,0 +1,40 @@
+<div class="container">
+
+    <div class="columns  is-centered">
+        <div class="column  is-half">
+            <center>
+                <h1 class="title">Event Properties</h1>
+                <h3 class="subtitle"> View a property across all events </h3>
+            </center>
+        </div>
+    </div>
+
+    <table class="table is-striped is-hoverable is-fullwidth">
+        <thead>
+            <tr>
+                <th>Property </th>
+                <th>Language</th>
+                <th>Source of data</th>
+            </tr>
+        </thead>
+        <tbody>
+
+            <% @sources.each do |source|%>
+                <tr>
+                    <td>
+                        <%= link_to source['property'], source_path(id: source['property_id']) %>
+                    </td>
+                    <td>
+                        <%= source['language'] %>
+                    </td>
+                    <td>
+                        <%= source['label'] %>
+                    </td>
+                </tr>
+            <% end %>
+        </tbody>
+    </table>
+
+
+
+</div>

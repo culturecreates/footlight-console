@@ -1,0 +1,39 @@
+<% provide(:title, "#{cookies[:seedurl]} - All events") %>
+
+<section class="container">
+  <center>
+    <h2 class="title"><%= @event_count %> <%= t('.upcoming') if cookies[:timeline] != "all" %> <%= t('.event') %> </h2>
+  </center>
+  <br>
+  <%= render 'event_stats' %>
+</section>
+
+<br>
+<%= render 'view_buttons' %>
+
+<br>
+<%= will_paginate @events, renderer: BulmaPagination::Rails %>
+
+<br>
+<div class="columns is-multiline is-gapless is-centered">
+  <% @events.each do |event| %>
+  <div class="column is-one-third">
+    <div class="event-thumbnail">
+      <figure class="image is-<%= image_ratio %>">
+        <%= link_to event_path(id: event["rdf_uri"]).gsub(".","%2E") do %>
+        <img src="<%= image_helper image_ratio, event['photo'] %>">
+        <% end %>
+      </figure>
+      <div class="is-overlay event-title">
+        <%= sanitize(event["title"]) %>
+      </div>
+      <span class="is-overlay event-status large-icons">
+        <%= render 'status_icons', event: event %>
+      </span>
+    </div>
+  </div>
+  <% end %>
+</div>
+<br>
+<%= will_paginate @events, renderer: BulmaPagination::Rails %>
+<br>

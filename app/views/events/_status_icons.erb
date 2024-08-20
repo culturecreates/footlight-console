@@ -1,0 +1,16 @@
+<% if event["statements_status"]["publishable"] %>
+<i class="fa <%= OK_ICON %> fa-2x" title="meets minimum requirements to be published"></i>
+<% end %>
+<% if event[:microposts] %>
+<i class="fa <%= MICROPOST_ICON %> fa-2x" title="has comments"></i>
+<% end %>
+<% if event["statements_status"]["updated"] %>
+<i class="fa <%= UPDATED_ICON %> fa-2x" title="has updates"></i>
+<% end %>
+<% if event["statements_status"]["problem"] %>
+<i class="fa <%= PROBLEM_ICON %> fa-2x" title="has flags"></i>
+<% end %>
+<% if event["statements_status"]["to_review"] %>
+<i class="fa <%= INITIAL_ICON %> fa-2x" title="needs review"></i>
+<% end %>
+

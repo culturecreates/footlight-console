@@ -1,0 +1,266 @@
+<h1 class="title">
+  <%= sanitize(@event['title_en']['value']) %>
+</h1>
+
+<div class="columns">
+  <div class="column statement">
+    <%= render partial: 'statement', locals: {stat: @event["title_fr"]} %>
+  </div>
+  <div class="column statement">
+    <%= render partial: 'statement', locals: {stat: @event["title_en"]} %>
+  </div>
+</div>
+
+<div class="columns">
+  <div class="column is-one-half">
+    <div class="columns">
+      <div class="column statement">
+        <%= render partial: 'statement', locals: {stat: @event["location"]} %>
+      </div>
+      <div class="column statement is-one-sixth">
+        <%= render partial: 'statement', locals: {stat: @event["event_status"]} %>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column statement">
+        <%= render partial: 'statement', locals: { stat: @event["event_type"]} %>
+      </div>
+      <div class="column statement">
+        <%= render partial: 'statement', locals: {stat: @event["attendance_mode"]} %>
+      </div>
+    </div>
+    <div class="columns">
+      <div class="column  statement">
+        <%= render partial: 'statement', locals: {stat: @event["virtuallocation"]} %>
+      </div>
+      <div class="column">
+        <div class="columns">
+          <div class="column statement">
+            <%= render partial: 'statement', locals: {stat: @event["virtuallocation_name_fr"]} %>
+          </div>
+        </div>
+        <div class="columns">
+          <div class="column statement">
+            <%= render partial: 'statement', locals: {stat: @event["virtuallocation_name_en"]} %>
+          </div>
+        </div>
+      </div>
+      </div>
+    <div class="columns">
+      <div class="column statement">
+        <%= render partial: 'statement', locals: {stat: @event["performed_by"]} %>
+      </div>
+      <div class="column  statement">
+        <%= render partial: 'statement', locals: {stat: @event["organized_by"]} %>
+      </div>
+    </div>
+
+    <% if !@event["worked_performed"].nil? ||  !@event["produced_by"].nil?  %>
+    <div class="columns">
+      <div class="column  statement">
+        <%= render partial: 'statement', locals: { stat: @event["worked_performed"]} %>
+      </div>
+      <div class="column  statement">
+        <%= render partial: 'statement', locals: {stat: @event["produced_by"]} %>
+      </div>
+    </div>
+    <% end %>
+  </div>
+  <div class="column is-one-half statement">
+    <%= render partial: 'statement', locals: {stat: @event["photo"]} %>
+  </div>
+</div>
+
+<div class="columns">
+  <div class="column  is-one-half  statement">
+    <%= render partial: 'statement', locals: {stat: @event["description_fr"]} %>
+  </div>
+  <div class="column  is-one-half  statement">
+    <%= render partial: 'statement', locals: {stat: @event["description_en"]} %>
+  </div>
+</div>
+
+<div class="columns">
+  <div class="column statement">
+    <%= render partial: 'statement', locals: { stat: @event["dates"]} %>
+  </div>
+  <div class="column statement is-one-fifth">
+    <%= render partial: 'statement', locals: { stat: @event["duration"]} %>
+  </div>
+  <div class="column statement is-one-fifth">
+    <%= render partial: 'statement', locals: {stat: @event["end_date"]} %>
+  </div>
+</div>
+
+<div class="columns">
+  <div class="column  is-clipped statement">
+    <%= render partial: 'statement', locals: {stat: @event["webpage_link_fr"]} %>
+  </div>
+  <div class="column is-clipped statement">
+    <%= render partial: 'statement', locals: {stat: @event["webpage_link_en"]} %>
+  </div>
+</div>
+
+<br>
+<h1>Other Info</h1>
+<br>
+<% if @event["contact_email"].present? || @event["contact_telephone"].present?   || @event["contact_website"].present? %>
+<div class="columns">
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['contact_email']} %>
+    </div>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['contact_telephone']} %>
+    </div>
+    <div  class="column">
+      <div class="columns">
+        <div  class="column is-one-half statement">
+          <%= render partial: 'statement', locals: { stat: @event["contact_name_en"]} %>
+        </div>
+      </div> 
+      <div class="columns">
+        <div  class="column  statement">
+          <%= render partial: 'statement', locals: { stat: @event["contact_name_fr"]} %>
+        </div>
+        </div>
+      </div>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['contact_website']} %>
+    </div>
+</div>
+<% end %>
+
+
+<% if @event["keywords"].present? || @event["facebook_link"].present?  || @event["video_link"].present? || @event["audience"].present? %>
+<div class="columns">
+  <% if @event["keywords"].present? %>
+    <div class="column is-clipped statement">
+      <%= render partial: 'statement', locals: {stat: @event["keywords"]} %>
+    </div>
+  <% end %>
+  <% if @event["keywords_en"].present? %>
+    <div class="column is-clipped statement">
+      <%= render partial: 'statement', locals: {stat: @event["keywords_en"]} %>
+    </div>
+  <% end %>
+  <% if @event["keywords_fr"].present? %>
+     <div class="column is-clipped statement">
+      <%= render partial: 'statement', locals: {stat: @event["keywords_fr"]} %>
+    </div>
+  <% end %>
+  <div class="column is-clipped statement">
+    <%= render partial: 'statement', locals: {stat: @event["facebook_link"]} %>
+  </div>
+  <div class="column is-clipped  statement">
+    <%= render partial: 'statement', locals: {stat: @event["video_link"]} %>
+  </div>
+  <% if @event["audience_en"].present? %>
+    <div class="column is-clipped  statement">
+      <%= render partial: 'statement', locals: {stat: @event["audience_en"]} %>
+    </div>
+  <% end %>
+  <% if @event["audience_fr"].present? %>
+    <div class="column is-clipped  statement">
+      <%= render partial: 'statement', locals: {stat: @event["audience_fr"]} %>
+    </div>
+  <% end %>
+  <% if @event["audience"].present? %>
+   <div class="column is-clipped  statement">
+      <%= render partial: 'statement', locals: {stat: @event["audience"]} %>
+    </div>
+  <% end %>
+</div>
+<% end %>
+
+
+<!-- Offer -->
+<% if true ||  @event["aggregateoffer_url"].present? || @event["aggregateoffer_type"].present? || @event["aggregateoffer_price"].present? %>
+<br>
+<h1>Tickets</h1>
+<br>
+<div class="columns">
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['aggregateoffer_url']} %>
+    </div>
+    <div  class="column">
+      <div class="columns">
+        <div  class="column  statement">
+          <%= render partial: 'statement', locals: { stat: @event["aggregateoffer_note_en"]} %>
+        </div>
+      </div>
+      <div class="columns">
+        <div  class="column  statement">
+          <%= render partial: 'statement', locals: { stat: @event["aggregateoffer_note_fr"]} %>
+        </div>
+      </div>
+    </div>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['aggregateoffer_type']} %>
+    </div>
+  <% if @event["aggregateoffer_price"].present?  %>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['aggregateoffer_price']} %>
+    </div>
+  <% end %>
+</div>
+<% end %>
+
+<div class="columns">
+  <% if @event["availability"].present?  %>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['availability']} %>
+    </div>
+  <% end %>
+  <% if @event["price"].present?  %>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['price']} %>
+    </div>
+  <% end %>
+  <div  class="column">
+    <div class="columns">
+      <div  class="column  statement">
+        <%= render partial: 'statement', locals: { stat: @event["price_description_en"]} %>
+      </div>
+    </div>
+    <div class="columns">
+      <div  class="column  statement">
+        <%= render partial: 'statement', locals: { stat: @event["price_description_fr"]} %>
+      </div>
+    </div>
+  </div>
+  <% if @event["currency"].present?  %>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['currency']} %>
+    </div>
+  <% end %>
+  <% if @event["valid_from"].present?  %>
+    <div  class="column  statement">
+      <%= render partial: 'statement', locals: { stat: @event['valid_from']} %>
+    </div>
+  <% end %>
+  <div class="column is-clipped statement">
+    <%= render partial: 'statement', locals: {stat: @event["buy_url"]} %>
+  </div>
+</div>
+<!-- Offer END -->
+
+<% if @event["same_as"].present? %>
+<div class="columns">
+  <div class="column is-clipped statement">
+    <%= render partial: 'statement', locals: {stat: @event["same_as"]} %>
+  </div>
+</div>
+<% end %>
+
+
+
+<% if @event["reviewer_note"].present? %>
+  <h1>Internal Use</h1>
+  <br>
+  <div class="columns">
+    <div class="column is-clipped statement">
+      <%= render partial: 'statement', locals: {stat: @event["reviewer_note"]} %>
+    </div>
+  </div>
+<% end %>
+

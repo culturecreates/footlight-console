@@ -1,0 +1,18 @@
+<% provide(:title, 'All Users') %>
+
+<h1 class='title'>All Users</h1>
+<table class="table is-striped is-hoverable is-fullwidth">
+  <thead>
+    <tr>
+      <th>Gravatar</th>
+      <th>Last Login</th>
+      <th>User Name </th>
+      <th>Email</th>
+      <th>Created</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= render @users %>
+  </tbody>
+</table>

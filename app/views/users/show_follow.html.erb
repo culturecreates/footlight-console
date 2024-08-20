@@ -1,0 +1,38 @@
+<% provide(:title, @title) %>
+<div class="row">
+  <aside class="col-md-4">
+    <section class="user_info">
+      <h1 class="title"><%= @user.name %></h1>
+      <%= gravatar_for @user %>
+      <br>
+      <b>Microposts:</b> <%= @user.microposts.count %>
+      <br>
+      <span><%= link_to "view my profile", @user, class: "button is-primary" %></span>
+    </section>
+    <br>
+    <section class="stats">
+      <%= render 'shared/stats' %>
+    </section>
+  </aside>
+  <div class="col-md-8">
+    <h3 class="is-size-4 subtitle"><%= @title %></h3>
+    <% if @users.any? %>
+      <table class="table is-striped is-hoverable is-fullwidth">
+        <thead>
+          <tr>
+            <th>Gravatar</th>
+            <th>Last Login</th>
+            <th>User Name </th>
+            <th>Email</th>
+            <th>Created</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <%= render @users %>
+        </tbody>
+      </table>
+      <%= will_paginate %>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,73 @@
+<% provide(:title, "#{cookies[:seedurl]} - List events") %>
+<section class="container">
+
+    <center>
+        <h1 class="title"><%= @event_count %> <%= "Upcoming " if cookies[:timeline] != "all" %> Events </h1>
+    </center>
+
+    <br>
+   
+    <%= render 'event_stats' %>
+</section>
+ 
+<br>
+
+ <%= render 'view_buttons' %>
+  
+    <% if  @events.first["archive_date"].to_date <= Date.today %>
+    <div class="level">
+        <div class="level-right">
+            <div class="level-item">
+                <div class="buttons has-addons">
+                    <span class="button is-dark"></span>
+                    <span class="button" disabled>Events that Footlight is no longer updating daily</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% end %>
+
+    <table class="table is-striped is-hoverable is-fullwidth">
+        <thead>
+            <tr>
+                <th title="List of events grouped by webpage">Events <i class="fa fa-info-circle"></i></th>
+                <th>Status</th>
+                 <th title="Date when structured data stops being automaticaly refreshed each day. Usually because event has passed. You can still update manually.">Daily refresh ends <i class="fa fa-info-circle"></i></th>
+                 <th title="Remove webpage link to Footlight">Remove link <i class="fa fa-info-circle"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% @events.each do |event| %>
+           
+            <tr id=<%=event["rdf_uri"].split(":")[1]%> <%=  "class=is-selected" if event["archive_date"].to_date <= Date.today %>>
+               
+                <td>
+                  <a href="<%= '/events/' + escape_uri(event["rdf_uri"]) %>">   <%= sanitize(event["title"]) %>  </a>
+                  <p class="is-size-7 has-text-grey"> <%= event['rdf_uri'].split("_")[1] %> </p>
+                </td>
+
+                <td>
+                     <%= render 'status_icons', {event: event} %>
+                </td>
+
+                 <td>
+                     <%= event["archive_date"].to_date %>
+                </td>    
+                <td>
+                 <%= link_to "",
+                  destroy_event_path(event_id: event["rdf_uri"]),
+                  method: :delete,
+                  remote: true,
+                  class: "tag is-delete is-dark",
+                  title: "Remove webpage link to Footlight",
+                   data: { confirm: 'Are you sure? This will remove the webpage from the Footlight console, but if the webpage still exists on your website it will be added back the next automatic refresh.' } %>
+                  
+                </td>    
+            </tr>
+          
+            <% end %>
+
+        </tbody>
+    </table>
+
+

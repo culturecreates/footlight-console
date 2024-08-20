@@ -1,0 +1,83 @@
+
+<% lang = 'en' %>
+<h1 class="title">
+<% if @resource["statements"]["name_#{lang}"] %>
+  <%= sanitize(@resource["statements"]["name_#{lang}"]['value']) %>
+<% elsif @resource["statements"]["name_fr"].present? %>
+  <%= sanitize(@resource["statements"]["name_fr"]['value']) %> 
+<% elsif @resource["statements"]["name"].present? %>
+  <%= sanitize(@resource["statements"]["name"]['value']) %> 
+<% end %>
+<% if @resource["statements"]["title_fr"].present? %>
+  <%= sanitize(@resource["statements"]["title_fr"]['value']) %> 
+<% elsif @resource["statements"]["title_en"].present? %>
+  <%= sanitize(@resource["statements"]["title_en"]['value']) %> 
+<% elsif @resource["statements"]["title"].present? %>
+  <%= sanitize(@resource["statements"]["title"]['value']) %> 
+<% end %>
+<p>
+<% if @resource["uri"].starts_with?("footlight:") %>
+    <h2 class="subtitle is-size-6 has-text-grey"><%= @resource["uri"] %></h2>
+  <% elsif @resource["uri"].starts_with?("adr:")   %>
+    <a class="is-size-5" href="<%= @resource["uri"].gsub("adr:","http://kg.artsdata.ca/resource/") %>"> <%= @resource["uri"] %></a>
+  <% else %>
+    <a class="is-size-5" href="<%= @resource["uri"] %>"> <%= @resource["uri"] %></a>
+  <% end %>
+</p>
+</h1>
+ 
+<% @resource["statements"].sort.each do |key,stat| %>
+<div class="columns">
+  <div class="column statement">
+    <%= render partial: 'statement', locals: {stat: stat} %>
+  </div>
+</div> 
+<% end %>
+
+<p>
+
+
+<% if @resource["statements"].empty? %>
+<h1 class="title"> External resource </h1>
+ 
+<% elsif %>
+
+  <%= link_to "Delete",
+                  delete_uri_resource_index_path(id: @resource["uri"]),
+                  method: :delete,
+                  remote: true,
+                  class: "button is-danger",
+                  title: "Delete",
+                 data: { confirm: 'Are you sure? This will permanently delete.' } %>
+
+  <%= link_to "Load Template", 
+                refresh_uri_resource_index_path(uri:  @resource["uri"]),
+                 method: :patch,
+                class: "button is-info",
+                  title: "Load Template",
+                 data: { confirm: 'This will add all properties from the template. Are you sure?' } %>
+                
+
+<% end %>
+</p>
+<br>
+
+<p class="is-size-3">Used in</p>
+<br>
+<% @links.each do |stat| %>
+
+<div class="columns">
+  <div class="column statement">
+  <%= stat["label"] %> for <a href="/resource?uri=<%= stat["event_rdf_uri"] %>"><%= stat["event_rdf_uri"] %></a>   
+  last updated <%= DateTime.parse(stat["updated_at"]).to_formatted_s(:rfc822) %> 
+  </div>
+  
+</div>
+<% end %>
+
+<br>
+<%= render partial: "admin_tools", locals: {subject_uri: @subject_uri, seedurl: @seedurl, webpage_url: @webpage_url, event: @event, webpage_url_fr: @webpage_url_fr} %>
+
+
+
+

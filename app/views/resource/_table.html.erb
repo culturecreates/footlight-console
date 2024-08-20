@@ -1,0 +1,35 @@
+<% if @resources["resources_by_class"][rdfs_class.downcase].present? %>
+<h2 class="title"> <%= name %> </h2>
+
+<table class="table is-striped is-hoverable is-fullwidth">
+  <thead>
+    <tr>
+        <th>Name </th>
+         <th title="Delete permanently">Delete <i class="fa fa-info-circle"></th>
+    </tr>
+  </thead>
+  <tbody>
+  
+    <% @resources["resources_by_class"][rdfs_class.downcase].each do |res| %>
+      <tr>
+        <td>
+        <a href="/resource?uri=<%= CGI.escape(res["uri"]) %> "> <%= res["name"] %>  </a> 
+        <p class="is-size-7 has-text-grey"> <a class="has-text-grey" href="/resource?uri=<%= CGI.escape(res["uri"]) %>"><%= res["uri"] %></a></p>
+        </td>
+        <td>
+                 <%= link_to "",
+                  delete_uri_resource_index_path(id: res["uri"]),
+                  method: :delete,
+                  remote: true,
+                  class: "tag is-delete is-dark",
+                  title: "Delete",
+                   data: { confirm: 'Are you sure? This will permanently delete.' } %>
+                  
+                </td>   
+      </tr>
+    <% end %>
+ 
+
+  </tbody>
+</table>
+ <% end %>

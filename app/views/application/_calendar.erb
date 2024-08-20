@@ -1,0 +1,53 @@
+<% calendar_objects = build_calendar stat["value"] %>
+<p class="is-size-7"><%= @event_timezone %></p>
+<% if  !calendar_objects[0].blank? %>
+ <div id="event_calendar">
+    <table class="calendar responsive">
+      <thead>
+        <tr id="mc_days">
+          <th class="current">
+            Mon
+          </th>
+          <th class="current">
+            Tue
+          </th>
+          <th class="current">
+            Wed
+          </th>
+          <th class="current">
+            Thu
+          </th>
+          <th class="current">
+            Fri
+          </th>
+          <th class="current">
+            Sat
+          </th>
+          <th class="current">
+            Sun
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <% calendar_objects[0].each do |week_start| %>
+        <tr>
+          <% 7.times do |n| %>
+            <%= render partial: 'day', locals: {show_controls: show_controls, day: (week_start + n.days).day, month: (week_start + n.days).strftime('%b'), year: (week_start + n.days).strftime('%Y'), time: time_of_event_on_date(week_start + n.days, calendar_objects[1], @event_timezone), stat: stat } %>
+          <% end %>
+        </tr>
+        <% end %>
+      </tbody>
+
+    </table>
+  </div>
+<% else %>
+  <p class='is-size-6'>
+    No dates available
+  </p>
+  <div class="metadata">
+    <p class='is-size-6'>
+      <i>Reference: <%= stat["value"] %> </i>
+    </p>
+  </div>
+<% end %>

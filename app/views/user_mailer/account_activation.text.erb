@@ -1,0 +1,36 @@
+Hello <%= @user.name %>,
+
+Welcome to Footlight Console and thank you for joining.  Your effort will help the Canadian arts sector build a national and AI-ready data source for the arts.
+
+Please click on the link below to activate your profile:
+<%= edit_account_activation_url(@user.activation_token, email: @user.email) %>
+
+Best,
+Tammy Lee, CEO and Founder, Culture Creates
+
+
+
+Bonjour <%= @user.name %>,
+
+Bienvenue sur Footlight. La suite d'outils de Footlight intègre la dernière technologie sémantique pour assurer la lisibilité par machine, la traçabilité et le plus haut niveau de qualité des données sur les événements artistiques et culturels.
+
+Veuillez cliquer sur le lien pour activer votre profil.
+<%= edit_account_activation_url(@user.activation_token, email: @user.email) %>
+
+
+Merci,
+L’équipe de la Culture crée
+
+————
+
+
+Hello <%= @user.name %>,
+
+Welcome to Footlight. Footlight’s suite of tools integrates the latest semantic technology to ensure machine-readability, traceability, and the highest level of quality for data about events happening arts and culture.
+
+Please click the link to activate your profile.
+<%= edit_account_activation_url(@user.activation_token, email: @user.email) %>
+
+Best,
+The Culture Creates Team
+

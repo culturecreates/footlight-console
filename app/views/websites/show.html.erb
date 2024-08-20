@@ -1,0 +1,37 @@
+<%provide(:title, @website.url) %>
+
+<div class="fullscreen">
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-two-thirds">
+       <h1 class="title">
+          Crawl Results
+       </h1>
+       <p class="subtitle">
+        This is public data that can appear anywhere on the web...
+       </p>
+    </div>
+  </div>
+  <br>
+  <div class="columns is-centered is-multiline">
+    <div class="column is-one-third statement has-text-centered">
+      <p class="is-size-4">
+        <%= pluralize(@data["resources_by_class"]["event"].count, 'Event') %>
+      </p>
+      <br>
+      <p>
+        <%= link_to "Review Events", events_path(seedurl: @website.url), class: "button is-large is-primary" %>
+      </p>
+    </div>
+
+    <div class="column is-one-third statement has-text-centered">
+      <p class="is-size-4">
+        <%= pluralize(@data["resources_by_class"]["organization"].count, 'Organization') %>
+      </p>
+      <br>
+      <p>
+        <%= link_to "Review Organization", "#", disabled: true, class: "button is-large is-primary" %>
+      </p>
+    </div>
+  
+  </div>
+</div>

@@ -1,0 +1,19 @@
+<div class="linker_form">
+<%= form_with model: @micropost do |f| %>
+
+  <div class="field">
+    <div class="control">
+      <%= f.text_area :content, placeholder: "Describe the issue...", class:"textarea is-size-5" %>
+    </div>
+  </div>
+  <%= f.hidden_field :related_statement_property, value: @statement_property %>
+  <%= f.hidden_field :related_statement_language, value: @statement_language %>
+  <%= f.hidden_field :related_subject_uri, value: @subject_uri %>
+  <%= f.hidden_field :related_statement_id, value: @statement_id %>
+  <div data-turbolinks="true">
+    <%= f.submit "Save", class: "button is-small" %>
+  </div>
+
+
+<% end %>
+</div>

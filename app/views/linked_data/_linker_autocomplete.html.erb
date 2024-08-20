@@ -1,0 +1,45 @@
+
+  <br>
+  <br>
+  <div class="card linker_form">
+   <% if @expected_class == 'Organization' || @expected_class == 'Person' %>
+    <div class="tabs is-boxed is-small">
+      <ul>
+      <li <%= 'class=is-active' if @expected_class == 'Organization' %>>
+          <%= link_to "Organization", linked_data_linker_path(expected_class: 'Organization', statement_id: @statement_id), remote: true %>
+        </li>
+        <li <%= 'class=is-active' if @expected_class == 'Person' %>>
+          <%= link_to "Person", linked_data_linker_path(expected_class: 'Person', statement_id: @statement_id), remote: true %>
+        </li>
+      </ul>
+    </div>
+    <% end %>
+    <div class="card-content">
+      <div style="display:none;" id="search_string"></div>
+
+      <div class="field has-addons">
+        <p class="control">
+          <%= link_to "Artsdata", linked_data_linker_path(recon_name: "Artsdata", expected_class: @expected_class, statement_id: @statement_id), remote: true, class: "button is-small #{ 'is-active' if @recon_name.include?('Artsdata') }" %>
+        </p>
+        <p class="control">
+          <%= link_to "Wikidata", linked_data_linker_path(recon_name: "Wikidata", expected_class: @expected_class, statement_id: @statement_id), remote: true, class: "button is-small #{ 'is-active' if @recon_name.include?('Wikidata') }" %>
+        </p>
+        <p class="control">
+           <%= link_to "Footlight", linked_data_linker_path(recon_name: "Footlight", expected_class: @expected_class, statement_id: @statement_id), remote: true, class: "button is-small #{ 'is-active' if @recon_name.include?('Footlight') }" %>
+
+        </p>
+      </div>
+
+      <%= form_tag(linked_data_add_linked_data_path(key: @key, statement_id: @statement_id), method: :patch, remote: true) do %> 
+        <div class="field">
+          <%= select_tag 'uri', '', style: 'width: 100%;'%>
+          <%= hidden_field_tag 'rdfs_class', @expected_class %>
+          <%= hidden_field_tag 'recon_url', @recon_url %>
+          <%= hidden_field_tag 'recon_type', @recon_type %>
+          <%= hidden_field_tag 'recon_prefix', @recon_prefix %>
+        </div>
+        <%= submit_tag 'Link', class: 'button is-primary' %>
+        <div class='button is-secondary'>Cancel</div>
+      <% end %>
+    </div>
+  </div>

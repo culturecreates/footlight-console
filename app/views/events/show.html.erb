@@ -1,0 +1,26 @@
+
+<% if is_francophone_event @event  %>
+    <% if @iframe_url %>
+      <%= render partial: "show_layout_iframe", locals: {lang: 'fr'} %>
+    <% else %>
+      <%= render partial: "show_layout", locals: {lang: 'fr'} %>
+    <% end %>
+<% elsif is_bilingual_event @event  %>
+  <%= render partial: "show_bilingual_layout" %>
+<% else %>
+  <% if @iframe_url %>
+    <%= render partial: "show_layout_iframe", locals: {lang: 'en'} %>
+  <% else %>
+    <%= render partial: "show_layout", locals: {lang: 'en'} %>
+  <% end %>
+<% end %>
+
+<center>
+  <br>
+    <%= link_to "Review Event", review_all_event_path(event_id: params[:id], review_next: "false", seedurl: @seedurl), method: :patch, class: "button use-loading is-primary is-large review-complete-event-button" %>
+    <%= link_to "Review and next", review_all_event_path(event_id: params[:id], review_next: "true", seedurl: @seedurl), method: :patch, class: "button  use-loading is-large review-complete-event-button" %>
+  <br>
+  <br>
+</center>
+
+ <%= render partial: "admin_tools", locals: {subject_uri: @subject_uri, seedurl: @seedurl, webpage_url: @webpage_url, webpage_url_fr: @webpage_url_fr} %>

@@ -1,0 +1,245 @@
+<% provide(:title, "About") %>
+
+<div class="container">
+
+  <h1 class="title">About</h1>
+
+  <%= render 'about_blurb' %>
+
+
+  <br>
+
+  <hr>
+  <h1 class="title"> Release History </h1>
+  <div class="content">
+     <h2>
+      AUGUST 2024  </h2>
+    <p>
+      <ul>
+        <li>URIs in Footlight Console can now be dereferenced from Artsdata Nebula (using content negotiation).
+        <li>Webpages with strucutred data can be queries with SPARQL, making the ability to crawl more reliable because it is independant of page layout.
+        <li>Added summary of flags and updates across all websites in the main dashboard.
+        <li>Support for images with accents and other non-standard characters in the filename.</li>
+      </ul>
+    </p> 
+   <h2>
+      AUGUST 2023
+  </h2>
+    <p>
+      <ul>
+        <li>Removed price formatting in order to see the actual value. This helps in reviewing problems with prices like a comma instead of period.
+        <li>Added keywords and audience to event layouts with and without @language. 
+        <li>Added ContactPoint and AggregateOffer to standard event layouts.
+        <li>Added reviewer notes for reviewers. Reviewer notes are not exported to Artsdata or anywhere outside of Footlight Console.
+        <li>Changed Event Type to reconcile with Artsdata Event Types or Wikidata Event types. It is also possible to create Footlight Event Types and map them to external controlled vocabularies.
+        <li>Display a warning message when a property cannot be seen because the property has no selected source.
+      </ul>
+    </p> 
+
+  <h2>
+      MARCH 2023
+  </h2>
+    <p>
+      <ul>
+        <li>Display Artsdata and Wikidata IDs for people, place, and organization links.
+        </ul>
+    </p> 
+   <h2>
+      FEBRUARY 2023
+    </h2>
+    <p>
+      <ul>
+        <li>Fixed code snippet to work with webpages that have 2 or more query parameters.
+        </ul>
+     </P>   
+    <h2>
+      SEPTEMBER 2022
+    </h2>
+    <p>
+      <ul>
+        <li>New ways to link people, places and organizations entities including Wikidata and Footlight. Artsdata remains the default LOD knowledge graph for linking entities, but users can now decide to manually add links to Wikidata and/or Footlight if the entity does not exist in Artsdata.ca. </li>
+        <li>When linking entities, disambiguating descriptions are displayed from Artsdata and Wikidata (if available) to help select the right entity.
+        <li>Administrators can create local entities in Footlight for People, Places and Organizations. 
+        <li>Administrators can lookup street address or place name (parks, buildings, etc.) using Google Places API to automatically fill in the complete postal address, geo-coordiinates and a link to a Google Map. 
+        <li>Administrators can view a list of all locally created people, places and organizations in Footlight per website. 
+        <li>Administrators can view all the derived links (used by) between locally created entities. For example, if a place is created from one website, and then used by events on other websites, all the events across Footlight that use that place are listed under the place's "Used by". 
+      </ul>
+    </p>
+    <h2>
+      JANUARY 2022
+    </h2>
+    <p>
+      <ul>
+        <li>Most event properties can now be edited by a reviewer when they need to improve the quality and accuracy of that data. Examples: reviewers can edit Titles and Descriptions; add and/or delete dates and times of events; and modify URLs for virtual locations. Editorial changes by a reviewer are categorized as a manual source.</li>
+        <li>Added ability to switch back (reconnect) to a website feed from a manual source.</li>
+        <li>New icons indicate the type of data source used for each property: website feed or manual source.</li>
+        <li>Added ability to select a custom source for a property for a single event so reviewers can handle exceptional cases.</li>
+        <li>Performed by and Organized by properties now automatically switch from a website feed to a manual source after first review.</li>
+        <li>Added option to automatically accept specified properties for new events. This can be configured by Culture Creates on request.</li>
+        <li>Added option for descriptions from different sources to be displayed side-by-side for comparison. This can be configured by Culture Creates on request.</li>
+      </ul>
+    </p>
+
+    <h2>
+      MARCH 2021
+    </h2>
+    <p>
+      <ul>
+        <li>Added a "Review All" button for reviewing properties across the entire website.</li>
+        <li>Added a button "Test JSON-LD" next to each webpage link. On bilingual sites there are 2 buttons: one for each webpage in a different language. The button opens the JSON-LD for a specific web page in the Google Structured Data testing tool (SDTT).</a>
+        <li>Entities for People, Places and Organizations can be added directly to Footlight and linked to events. Events will prioritize links to People, Places and Organizations in Artsdata.ca, and if nothing matches, the event will be linked locally.</li>
+        <li>Code Snippet can be installed with Google Tag manager, and will appear with the status "Installed" in the "Code Snippet Status" screen of Footlight.</li>
+        <li>Event types that are not standard schema.org (such as 'ado:Performance') can now be added manually, and will be linked to the event using schema:additionalType. This generates a valid JSON-LD for Google bots.</li>
+        <li>Attendance Mode is set automatically to "online" when the location of an Event is a "Virtual Location".</li>
+        <li>Added endDate. When endDate is missing from the event, the startDate is used and the time is removed to make endDate on the same day and without a specific end time. This is Google's recommendation. </li>
+        <li>Added Offer properties: price, availability, currency and validFrom as optional properties when available. </li>
+        <li>Updated documentation of <a href='https://drive.google.com/file/d/19UDRPTyuFTfWzn4f0n6qm73e235o5uAL/view'>Footlight Event properties v0.2</a>.</li>
+        </ul>
+    </p>
+
+    <h2>
+      DECEMBER 2020
+    </h2>
+    <p>
+      <ul>
+        <li>Added property "Virtual Location" for on-line events.</li>
+      </ul>
+    </p>
+
+    <h2>
+      JULY 2020
+    </h2>
+    <p>
+      <ul>
+        <li>Added property "Organized by" that emerged due to <b>COVID</b> and recommended by Google's guidelines on best
+          practise.</li>
+      </ul>
+    </p>
+
+    <h2>
+      JUNE 2020
+    </h2>
+    <p>
+      <ul>
+        <li> Properties "Performed by", "Organized by" and "Location" are no longer flagged as "updated" (yellow) when
+          the web page text changes, only when the entity link changes. </li>
+        <li> Dates that are more than 10 years in the past, or 10 years in the future are reject as invalid because they
+          were most likely misunderstood by the Natural Language Processing module.</li>
+        <li> Activities in Footlight are now being tracked in Google Analytics. </li>
+        <li> Culture Creates Slack channel now gets notified when users log-in to the Footlight Console. </li>
+        <li> Added all relevant Schema.org Event Types (ComedyEvent, MusicEvent, Screening, TheaterEvent, Workshop, ...).
+        </li>
+        <li> Accents are now allowed in page URLs. </li>
+      </ul>
+    </p>
+
+    <h2>
+      MAY 2020
+    </h2>
+    <p>
+      <ul>
+        <li>New "Properties" tab provides a view of a single property across all events. This makes it easy to
+          review/edit all data for a single property. For example, selecting the property "Performed by" will show all
+          of the linked people and organizations across all events, and allow you to add missing links. </li>
+      </ul>
+    </p>
+
+    <h2>
+      APRIL 2020
+    </h2>
+    <p>
+      <ul>
+        <li>Added new properties for "eventStatus" (cancelled, postponed, rescheduled), "Moved Online" and
+          "attendanceMode" that emerged due to <b>COVID</b> and recommended by Google's guidelines on best practise.</li>
+      </ul>
+    </p>
+
+
+    <h2>
+      MARCH 2020
+    </h2>
+    <p>
+      <ul>
+        <li>Added section on installing the Footlight Code Snippet, and checks if the code snippet is installed
+          correctly. </li>
+        <li> Added "publishable Icon" (green checkmark) on event listing dashboard to clearly mark publishable events
+          meeting mandatory requirements of title, location, dates </li>
+        <li> Added toggle to switch event listing view between Mosaic and List </li>
+        <li> Documented status icons to display a textual summary when you rollover with the mouse.</li>
+        <li> Timezone can now be set in the source algorithm when it is not available on the web page.</li>
+     
+      </ul>
+    </p>
+
+
+    <h2>
+      FEBRUARY 2020
+    </h2>
+    <p>
+      <ul>
+        <li>When viewing an event, the live webpage of the event is now displayed in an iFrame next to the structured
+          data. This allows you to review the structured data more easily. To turn on/off this feature select "Websites"
+          from the "Account" drop-down menu, click "edit" next to the name of the website. On the website settings page
+          set "Display iframe" to true or false and save changes. </li>
+        <li> New filter to view events by new, updated, flagged and commented. </li>
+        <li> Timezone can be set per website for display of event times. This does not change any data, only the display
+          of data. </li>
+        <li> Alternatives now have a label to indicate how the alternative works and where the data is coming from on
+          the webpage. </li>
+        <li> Mandatory fields are marked with an * (asterix). If mandatory fields are missing or have never been
+          reviewed then the event cannot by published (marked as not publishable in Data Export.) </li>
+        <li> Issue comment icon is now displayed on the events listing page when one or more properties of an event have
+          comments. </li>
+        <li> Events listing page displays multiple icons types per event. If the event has one or more icons, then each
+          icon is displayed side-by-side on the event image.</li>
+        <li> The "Based on:" text is automatically cut off after 50 words when displayed on the screen. However the
+          complete text is still used for named entity extraction. </li>
+      </ul>
+    </p>
+
+    <h2>
+      NOVEMBER 2019
+    </h2>
+    <p>
+      <ul>
+        <li> Dates now display the year as well as month and day. </li>
+      </ul>
+    </p>
+
+
+    <h2>
+      OCTOBER 2019
+    </h2>
+
+    <p>
+      <ul>
+        <li> Events are now sorted by date of first performance.
+        </li>
+        <li> When no performance date is available for sorting, a temporary date of 1 yr in the future is used.
+        </li>
+        <li> Linked entities now have 3 states: </li>
+        <ol>
+          <li>"Based on" links are automatically linked using text on the webpage and refreshed nightly.
+          </li>
+          <li>"Manually added" links are added by a user inside Footlight.
+          </li>
+          <li>"Manually deleted" are displayed with the text strike-out and represent automatic links that are manually
+            deleted by a user inside Footlight.
+          </li>
+        </ol>
+        <li> Autocomplete now kicks in when manually adding links when there are more than 15 choices.
+        </li>
+        <li> The property "Performed by" can now be linked to People as well as Organization.
+        </li>
+        <li> Automatic linking now attempts to automatically link urls found on the webpage to urls in artdata.ca. This
+          is particularly useful when only the url of the performer is available on the webpage.
+        </li>
+        <li> The Event property "Organized by" was removed because it was deemed of no interest to the general public
+          looking for a performing arts event.
+        </li>
+        <li> Event Types now include: Performance, Talk, Workshop, Exhibition, Screening.
+        </li>
+      </ul>
+
+    </p>
+  </div>

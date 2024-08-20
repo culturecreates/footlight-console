@@ -1,0 +1,42 @@
+<% previous_micropost_related_subject_uri = microposts.first.related_subject_uri %>
+
+<% microposts.each do |micropost| %>
+    <% if micropost.related_subject_uri != previous_micropost_related_subject_uri  %>
+
+       <%= link_to "#{previous_micropost_related_subject_uri.gsub("adr:","")}", event_path(id: previous_micropost_related_subject_uri), class: "button is-primary" if !previous_micropost_related_subject_uri.nil? %>
+        
+            
+        <div style="border-bottom: 2px dashed white; padding-bottom: 10px;margin-bottom: 20px "></div>
+      <% end %>
+  
+    <div id="micropost-<%= micropost.id %>" class="microposts">
+      <div class="columns">
+        <div class="column  is-size-5">
+          <i class="fa fa-quote-left micropost-icon"></i> <%= micropost.content %>
+          <br>
+           <span class="timestamp is-size-7">
+          Added <%= time_ago_in_words(micropost.created_at) %> ago by <%= micropost.user.name %>
+          <% if current_user?(micropost.user) || current_user.admin? %>
+            | <%= link_to "delete", micropost_path(id: micropost.id), method: :delete,
+                                              remote: true %>
+          <% end %>
+        </span>
+         
+
+    
+          <div class="tags has-addons pull-right">
+            <span class="tag is-black">Property</span>
+            <span class="tag"><%= micropost.related_statement_property %> <%= micropost.related_statement_language %></span>
+          </div>
+        </div>
+    </div>
+
+       
+    </div>
+    <% previous_micropost_related_subject_uri = micropost.related_subject_uri %>
+    <% if micropost == microposts.last%>
+ 
+        <%= link_to "#{micropost.related_subject_uri.gsub("adr:","")}", event_path(id: micropost.related_subject_uri), class: "button is-primary" if !micropost.related_subject_uri.nil? %>
+    <% end %>
+<% end %>
+
