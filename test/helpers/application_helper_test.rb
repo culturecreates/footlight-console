@@ -39,7 +39,7 @@ class ApplicationHelperTest < ActionView::TestCase
   end
 
   test "image helper passes when no image extension" do
-    expected = "ssshttps://calendar.sandersoncentre.ca/Default/Detail/2023-02-14-2000-An-Evening-with-Jann-Arden/64f10c40-7bcb-4fef-8d42-aea9012ea3c6"
+    expected = "https://calendar.sandersoncentre.ca/Default/Detail/2023-02-14-2000-An-Evening-with-Jann-Arden/64f10c40-7bcb-4fef-8d42-aea9012ea3c6"
     assert_equal expected, image_helper("16by9", "https://calendar.sandersoncentre.ca/Default/Detail/2023-02-14-2000-An-Evening-with-Jann-Arden/64f10c40-7bcb-4fef-8d42-aea9012ea3c6")
   end
 
