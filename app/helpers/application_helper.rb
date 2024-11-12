@@ -91,8 +91,7 @@ module ApplicationHelper
     if statement.squish.start_with?('http')
       "<a href='#{statement}'>#{statement.truncate(100, omission: "[...]", separator: '/')}</a>"
     elsif statement.include?("abort_update")
-      truncated_statement = truncate(statement, length: 100)
-      "<span title='#{statement}'>#{truncated_statement}</span>"
+      statement.truncate(100, omission: "[...]")
     else
       statement
     end
