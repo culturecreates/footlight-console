@@ -42,7 +42,7 @@
             <tr id=<%=event["rdf_uri"].split(":")[1]%> <%=  "class=is-selected" if event["archive_date"].to_date <= Date.today %>>
                
                 <td>
-                  <a href="<%= '/events/' + escape_uri(event["rdf_uri"]) %>">   <%= sanitize(event["title"]) %>  </a>
+                  <a href="<%= '/events/' + escape_uri(event["rdf_uri"]) %>">   <%= sanitize(truncate(event["title"], length: 200)) %>  </a>
                   <p class="is-size-7 has-text-grey"> <%= event['rdf_uri'].split("_")[1] %> </p>
                 </td>
 
