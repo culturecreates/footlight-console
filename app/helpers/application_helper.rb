@@ -93,7 +93,6 @@ module ApplicationHelper
     elsif statement.include?("abort_update")
       truncated_statement = truncate(statement, length: 100)
       "<span title='#{statement}'>#{truncated_statement}</span>"
-      statement
     else
       statement
     end

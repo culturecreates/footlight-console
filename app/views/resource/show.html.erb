@@ -2,18 +2,18 @@
 <% lang = 'en' %>
 <h1 class="title">
 <% if @resource["statements"]["name_#{lang}"] %>
-  <%= sanitize(@resource["statements"]["name_#{lang}"]['value']) %>
+  <%= display_statement(@resource["statements"]["name_#{lang}"]['value']) %>
 <% elsif @resource["statements"]["name_fr"].present? %>
-  <%= sanitize(@resource["statements"]["name_fr"]['value']) %> 
+  <%= display_statement(@resource["statements"]["name_fr"]['value']) %> 
 <% elsif @resource["statements"]["name"].present? %>
-  <%= sanitize(@resource["statements"]["name"]['value']) %> 
+  <%= display_statement(@resource["statements"]["name"]['value']) %> 
 <% end %>
 <% if @resource["statements"]["title_fr"].present? %>
-  <%= sanitize(@resource["statements"]["title_fr"]['value']) %> 
+  <%= display_statement(@resource["statements"]["title_fr"]['value']) %> 
 <% elsif @resource["statements"]["title_en"].present? %>
-  <%= sanitize(@resource["statements"]["title_en"]['value']) %> 
+  <%= display_statement(@resource["statements"]["title_en"]['value']) %> 
 <% elsif @resource["statements"]["title"].present? %>
-  <%= sanitize(@resource["statements"]["title"]['value']) %> 
+  <%= display_statement(@resource["statements"]["title"]['value']) %> 
 <% end %>
 <p>
 <% if @resource["uri"].starts_with?("footlight:") %>
