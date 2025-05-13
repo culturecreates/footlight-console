@@ -21,9 +21,7 @@
           <%= link_to "Events", events_path(page: cookies[:page],seedurl: cookies[:seedurl], filter: cookies[:filter]), class: "navbar-item" %>
           <%= link_to "Properties" , sources_path(seedurl: cookies[:seedurl]), class: "navbar-item " %> 
           <%= link_to "Comments" , microposts_path(seedurl: cookies[:seedurl]), class: "navbar-item" %> 
-          <% if current_user&.admin? %>
            <%= link_to "Resources" , resource_index_path(seedurl: cookies[:seedurl]), class: "navbar-item" %> 
-          <% end %>
          <% end %>
   
     </div>
