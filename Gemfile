@@ -1,40 +1,41 @@
 source 'https://rubygems.org'
 
 
-gem 'rails',                   '~> 5.2'
-gem 'bcrypt',                  '3.1.12'
-gem 'faker',                   '1.7.3'
-gem 'mini_magick',             '4.7.0'
-gem 'will_paginate',           '3.1.6'
+gem 'rails',                   '~> 6.1.7.10'
+gem 'bcrypt'
+gem 'faker'
+gem 'mini_magick'
+gem 'will_paginate'
 gem 'will_paginate-bulma'
-gem 'puma',                    '3.9.1'
+gem 'puma'
 gem 'sassc-rails'
-gem 'uglifier',                '3.2.0'
-gem 'coffee-rails',            '4.2.2'
-gem 'jquery-rails',            '4.3.1'
-gem 'turbolinks',              '5.0.1'
+gem 'uglifier'
+gem 'coffee-rails'
+gem 'jquery-rails'
+gem 'turbolinks'
 gem 'jquery-turbolinks'
-gem 'jbuilder',                '2.7.0'
+gem 'jbuilder'
 
 group :development, :test do
-  gem 'sqlite3', '1.3.13'
+  gem 'sqlite3', '~> 1.4'
   gem 'byebug', platform: :mri
+  gem 'rails-controller-testing'
 end
 
 group :development do
-  gem 'web-console',           '>= 3.5'
-  gem 'listen',                '3.1.5'
-  gem 'spring',                '2.0.2'
-  gem 'spring-watcher-listen', '2.0.1'
+  gem 'web-console'
+  gem 'listen'
+  gem 'spring'
+  gem 'spring-watcher-listen'
   gem 'htmlbeautifier'
 end
 
 group :test do
-  gem 'rails-controller-testing', '1.0.2'
-  gem 'minitest',                 '5.10.3'
-  gem 'minitest-reporters',       '1.1.14'
-  gem 'guard',                    '2.14.1'
-  gem 'guard-minitest',           '2.4.6'
+  # gem 'rails-controller-testing'
+  gem 'minitest'
+  gem 'minitest-reporters'
+  gem 'guard'
+  gem 'guard-minitest'
 end
 
 group :production do
@@ -47,7 +48,7 @@ end
 
 # gem 'bundler', '1.17.3'
 
-ruby '2.7.8'
+ruby '3.1.2'
 gem 'httparty'
 gem "bulma-rails", "~> 0.7.1"
 gem "font-awesome-rails"     #https://fontawesome.com/v4.7.0/

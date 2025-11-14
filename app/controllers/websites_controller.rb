@@ -23,7 +23,7 @@ class WebsitesController < ApplicationController
 
   def update
     @website = Website.find(params[:id])
-    if @website.update_attributes(website_params)
+    if @website.update(website_params)
       cookies.delete :event_timezone
       flash[:success] = "Website settings updated."
       redirect_to dashboard_path

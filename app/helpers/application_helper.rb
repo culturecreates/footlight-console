@@ -61,7 +61,7 @@ module ApplicationHelper
       if lang.present?
         key += "_#{_lang}"
       end
-    rescue => exception
+    rescue 
       key = "failed to make key"
     end
     return key
