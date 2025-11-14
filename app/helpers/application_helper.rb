@@ -22,14 +22,16 @@ module ApplicationHelper
     valid_image_url = "https://via.placeholder.com/800x480" if by_ratio == "5by3"
     valid_image_url = "https://via.placeholder.com/400x400" if by_ratio == "1by1"
     valid_image_url = "https://via.placeholder.com/1200x400" if by_ratio == "3by1"
-    if !url.blank?
+    if url.present?
       begin
-        encoded_url = URI.encode(url)
-        uri = URI.parse(encoded_url)
+        # encoded_url = CGI.escape(url)
+        # puts "Encoded URL: #{encoded_url}"
+        uri = Addressable::URI.parse(url)
+        raise "Invalid URL" if uri.scheme.nil?
         file_extension = ''
         uri_path = uri.path # check the path for a file extension
         file_extension = uri_path.split(".").last if uri_path.include?(".")
-        file_extension.downcase!
+        file_extension&.downcase!
         if ["jpg" ,"png" ,"jpeg" ,"jfif", "ashx", "webp"].include?(file_extension) || file_extension.empty?
           valid_image_url = url
         end
@@ -37,7 +39,7 @@ module ApplicationHelper
         logger.error exception
       end
     end
-    return valid_image_url
+    valid_image_url
   end
 
   def check_for_manual_deletion complete_array, uri

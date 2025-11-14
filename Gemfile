@@ -59,4 +59,5 @@ gem 'sendgrid-ruby'
 
 gem 'select2-rails'
 gem 'underscore-rails'
+gem 'addressable' # Added for improved URL parsing
 
