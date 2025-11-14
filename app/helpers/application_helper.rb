@@ -102,7 +102,7 @@ module ApplicationHelper
   def slack_url_per_environment
     slack_base = 'https://hooks.slack.com/services/'
     # Test webhook https://webhook.site/#!/2529f440-39ba-4092-a6e0-f42d3adb3b4e
-    Rails.env.development? || Rails.env.test? ? 'https://webhook.site/fe8b509e-3c4c-47d3-9287-e8f6bdb8bd70' : slack_base + ENV['SLACK_NOTIFICATION']
+    Rails.env.development? || Rails.env.test? ? 'https://webhook.site/fe8b509e-3c4c-47d3-9287-e8f6bdb8bd70' : slack_base + (ENV['SLACK_NOTIFICATION'] || '')
   end
 
 
