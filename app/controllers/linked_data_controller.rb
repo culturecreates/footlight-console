@@ -167,7 +167,8 @@ class LinkedDataController < ApplicationController
 
   def footlight_recon_url_per_environment
     if Rails.env.development?  || Rails.env.test? 
-      'http://localhost:3000/recon';
+       'https://footlight-condenser.herokuapp.com/recon';
+      # 'http://localhost:3000/recon';
     else
       'https://footlight-condenser.herokuapp.com/recon';
     end

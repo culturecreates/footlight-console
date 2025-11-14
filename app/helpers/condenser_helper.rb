@@ -94,7 +94,8 @@ module CondenserHelper
 
   def condenser_url_per_environment
     if Rails.env.development? || Rails.env.test?
-      'http://localhost:3000'
+      'https://footlight-condenser.herokuapp.com'
+      #'http://localhost:3000'
     else
       'https://footlight-condenser.herokuapp.com'
     end
@@ -110,6 +111,7 @@ module CondenserHelper
     
     begin
       if method == :get
+        puts "Calling condenser GET #{condenser_url_per_environment + path}"
         result = HTTParty.get(condenser_url_per_environment + path, basic_auth: auth)
       elsif method == :patch
         result = HTTParty
