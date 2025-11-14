@@ -3,6 +3,7 @@ require File.expand_path('../../config/environment', __FILE__)
 require 'rails/test_help'
 require "minitest/reporters"
 Minitest::Reporters.use!
+Rails.application.routes.default_url_options[:host] = 'localhost:3000'
 
 class ActiveSupport::TestCase
   fixtures :all

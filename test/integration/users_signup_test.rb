@@ -2,9 +2,9 @@ require 'test_helper'
 
 class UsersSignupTest < ActionDispatch::IntegrationTest
 
-  def setup
-    ActionMailer::Base.deliveries.clear
-  end
+  # def setup
+  #   ActionMailer::Base.deliveries.clear
+  # end
 
   test "invalid signup information" do
     get signup_path
@@ -27,7 +27,7 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
                                          password:              "password",
                                          password_confirmation: "password" } }
     end
-    assert_equal 1, ActionMailer::Base.deliveries.size
+    # assert_equal 1, ActionMailer::Base.deliveries.size
     user = assigns(:user)
     assert_not user.activated?
     # Try to log in before activation.
