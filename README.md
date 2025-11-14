@@ -8,20 +8,34 @@ All source code in this repository is available under the MIT License. See [LICE
 
 ## Getting started
 
-To get started with the app, clone the repo and then install the needed gems:
+To get started run the app on your local machine.
+
+Clone the repo:
+```
+git clone https://github.com/culturecreates/footlight-console.git
+cd footlight-console 
+```
+
+Install the needed gems:
 
 ```
-$ bundle install
+bundle install
 ```
 
+Set up the database:
 ```
-$ rails test
+rails db:create
+rails db:migrate
+rails db:seed  
+```
+
+Run the tests:
+```
+rails test
 ```
 
 If the test suite passes, you'll be ready to run the app in a local server:
 
 ```
-$ rails server -p 3001
+rails server -p 3001
 ```
-
-Note: For local development, run Footlight Condenser on port 3000.
