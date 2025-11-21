@@ -39,3 +39,8 @@ If the test suite passes, you'll be ready to run the app in a local server:
 ```
 rails server -p 3001
 ```
+
+Optional environment variables:
+GOOGLE_MAPS_API - To use Google Maps API when adding a new Place address
+
+SLACK_NOTIFICATION - To send notifications to Slack each time you login or add a comment to a flag.
