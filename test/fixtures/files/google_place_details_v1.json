@@ -1,0 +1,18 @@
+{
+  "name": "places/ChIJnWHJM0sXyUwRBNA5S4k_b3I",
+  "formattedAddress": "4145 Av. Beaconsfield, Montréal, QC H4A 2H4, Canada",
+  "addressComponents": [
+    { "shortText": "4145",          "longText": "4145",              "types": ["street_number"] },
+    { "shortText": "Av. Beaconsfield", "longText": "Avenue Beaconsfield", "types": ["route"] },
+    { "shortText": "Montréal",      "longText": "Montréal",           "types": ["locality"] },
+    { "shortText": "QC",            "longText": "Québec",             "types": ["administrative_area_level_1"] },
+    { "shortText": "CA",            "longText": "Canada",             "types": ["country"] },
+    { "shortText": "H4A 2H4",       "longText": "H4A 2H4",            "types": ["postal_code"] }
+  ],
+  "location": {
+    "latitude": 45.469074,
+    "longitude": -73.6258608
+  },
+  "types": ["premise"],
+  "googleMapsUri": "https://maps.google.com/?q=4145+Av.+Beaconsfield,+Montréal,+QC+H4A+2H4"
+}
