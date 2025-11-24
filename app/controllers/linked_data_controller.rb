@@ -83,33 +83,96 @@ class LinkedDataController < ApplicationController
   #   occupation
   #   url
   def create_resource
+    
     if params[:rdfs_class] == "Place"
+
       if params[:address].present?
         # Get Place details from Google
-        result = HTTParty.get("https://maps.googleapis.com/maps/api/place/details/json?place_id=#{params[:address]}&key=#{ENV['GOOGLE_MAPS_API']}")
-        if result.response.code[0] == '2'
-          if result.body
-            details = JSON.parse(result.body)["result"]
-            @street_address, @postal_code, @address_locality, @address_region, @address_country = helpers.split_postal_address(details)
-            @address = details["formatted_address"]
-            @longitude = details["geometry"]["location"]["lng"]
-            @latitude = details["geometry"]["location"]["lat"]
-            @same_as = ["Google Place #{params[:address]}","Place",["Google Place #{params[:address]}","#{details["url"]}"]]
-            @disambiguating_description = "#{details["types"].join(', ')} at #{details["formatted_address"]}"
-          end
+        # result = HTTParty.get("https://maps.googleapis.com/maps/api/place/details/json?place_id=#{params[:address]}&key=#{ENV['GOOGLE_MAPS_API']}")
+        
+        Rails.logger.debug("[GOOGLE] URL = #{helpers.google_place_details_url(params[:address])}")
+
+        referer = request.base_url
+        Rails.logger.debug("[GOOGLE] Using Referer header: #{referer}")
+
+        result = HTTParty.get(
+          helpers.google_place_details_url(params[:address]),
+          headers: { 'Referer' => referer }
+        )
+
+        Rails.logger.debug("[GOOGLE] HTTP #{result.code}")
+        Rails.logger.debug("[GOOGLE] RAW BODY: #{result.body}")
+
+        if result.response.code.start_with?('2') && result.body.present?
+          # Places API v1 returns the Place object at the top level,
+          # not wrapped in a "result" field like the legacy API.
+          place   = JSON.parse(result.body)
+          details = helpers.normalize_place_details(place)
+
+          Rails.logger.debug("[GOOGLE] NORMALIZED DETAILS: #{details.inspect}")
+
+          @street_address, @postal_code, @address_locality, @address_region, @address_country =
+            helpers.split_postal_address(details)
+
+          @address   = details["formatted_address"]
+          @longitude = details.dig("geometry", "location", "lng")
+          @latitude  = details.dig("geometry", "location", "lat")
+
+          Rails.logger.debug("[GOOGLE] street_address=#{@street_address}, postal_code=#{@postal_code}, " \
+                             "locality=#{@address_locality}, region=#{@address_region}, country=#{@address_country}, " \
+                             "lat=#{@latitude}, lng=#{@longitude}")
+
+          # Preserve the legacy shape of @same_as using the normalized "url"
+          @same_as = [
+            "Google Place #{params[:address]}",
+            "Place",
+            ["Google Place #{params[:address]}", details["url"]]
+          ]
+
+          @disambiguating_description =
+            "#{details["types"].join(', ')} at #{details["formatted_address"]}"
         end
       end
+
     elsif params[:rdfs_class] == "Person" && params[:occupation].present?
       @disambiguating_description = "#{params[:occupation]}"
     else
       @disambiguating_description = params[:rdfs_class]
     end
-  
+
+    # Decide what to use as the final "name" value.
+    # For Places, if the user-typed name is just the short_name or a number (e.g. "4563") and we do have a formatted address from Google, use the formatted
+    # address as the name instead. This avoids creating resources whose name is only a bare number.
+    raw_name = params[:name].to_s.strip
+    address_components = details["address_components"] || []
+
+    matches_short_name =
+      address_components.any? { |c| c["short_name"].to_s.casecmp?(raw_name) }
+
+    # e.g. "132", "4563", "4563A"
+    bare_number_or_unit =
+      raw_name.match?(/\A\d+[A-Za-z]?\z/)
+
+    effective_name =
+      if params[:rdfs_class] == "Place" &&
+        @address.present? &&
+        (matches_short_name || bare_number_or_unit)
+        @address
+      else
+        raw_name
+      end
+
+    Rails.logger.debug(
+      "[GOOGLE] raw_name=#{raw_name.inspect}, " \
+      "matches_short_name=#{matches_short_name}, " \
+      "bare_number_or_unit=#{bare_number_or_unit}, " \
+      "effective_name=#{effective_name.inspect}"
+    )
     # Load all options
     options = { 
-      name: { value: params[:name], language: params[:name_lang] },
-      occupation: { value: params[:occupation], language: params[:name_lang]  },
-      url: { value: params[:url], language: ""  },
+      name:        { value: effective_name,          language: params[:name_lang] },
+      occupation:  { value: params[:occupation],     language: params[:name_lang] },
+      url:         { value: params[:url],            language: ""                 },
     }
     if @disambiguating_description
       options[:disambiguating_description] = { value: @disambiguating_description, language: "en"} 
@@ -127,6 +190,8 @@ class LinkedDataController < ApplicationController
         same_as: { value: @same_as, language: "" }
       })
     end
+
+    Rails.logger.debug("[GOOGLE] OPTIONS SENT TO CONDENSER: #{options.inspect}")
 
     # call condenser condenser_create_linked_resource 
     new_entity = helpers.condenser_create_linked_resource params[:rdfs_class], params[:seedurl], options
