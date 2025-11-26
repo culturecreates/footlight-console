@@ -83,13 +83,11 @@ class LinkedDataController < ApplicationController
   #   occupation
   #   url
   def create_resource
-    
+    details = nil
+
     if params[:rdfs_class] == "Place"
 
       if params[:address].present?
-        # Get Place details from Google
-        # result = HTTParty.get("https://maps.googleapis.com/maps/api/place/details/json?place_id=#{params[:address]}&key=#{ENV['GOOGLE_MAPS_API']}")
-        
         Rails.logger.debug("[GOOGLE] URL = #{helpers.google_place_details_url(params[:address])}")
 
         referer = request.base_url
@@ -141,53 +139,59 @@ class LinkedDataController < ApplicationController
     end
 
     # Decide what to use as the final "name" value.
-    # For Places, if the user-typed name is just the short_name or a number (e.g. "4563") and we do have a formatted address from Google, use the formatted
-    # address as the name instead. This avoids creating resources whose name is only a bare number.
-    raw_name = params[:name].to_s.strip
-    address_components = details["address_components"] || []
+    # For Places, if the user-typed name is just the short_name or a bare number
+    # (e.g. "4563") and we do have a formatted address from Google, use the formatted
+    # address as the name instead. This avoids creating resources whose name is only a number.
+    raw_name       = params[:name].to_s.strip
+    effective_name = raw_name
 
-    matches_short_name =
-      address_components.any? { |c| c["short_name"].to_s.casecmp?(raw_name) }
+    if params[:rdfs_class] == "Place" && details.present? && @address.present?
+      address_components = details["address_components"] || []
 
-    # e.g. "132", "4563", "4563A"
-    bare_number_or_unit =
-      raw_name.match?(/\A\d+[A-Za-z]?\z/)
+      matches_short_name =
+        address_components.any? { |c| c["short_name"].to_s.casecmp?(raw_name) }
 
-    effective_name =
-      if params[:rdfs_class] == "Place" &&
-        @address.present? &&
-        (matches_short_name || bare_number_or_unit)
-        @address
-      else
-        raw_name
+      # e.g. "132", "4563", "4563A"
+      bare_number_or_unit =
+        raw_name.match?(/\A\d+[A-Za-z]?\z/)
+
+      if matches_short_name || bare_number_or_unit
+        effective_name = @address
       end
 
-    Rails.logger.debug(
-      "[GOOGLE] raw_name=#{raw_name.inspect}, " \
-      "matches_short_name=#{matches_short_name}, " \
-      "bare_number_or_unit=#{bare_number_or_unit}, " \
-      "effective_name=#{effective_name.inspect}"
-    )
-    # Load all options
-    options = { 
-      name:        { value: effective_name,          language: params[:name_lang] },
-      occupation:  { value: params[:occupation],     language: params[:name_lang] },
-      url:         { value: params[:url],            language: ""                 },
-    }
-    if @disambiguating_description
-      options[:disambiguating_description] = { value: @disambiguating_description, language: "en"} 
+      Rails.logger.debug(
+        "[GOOGLE] raw_name=#{raw_name.inspect}, " \
+        "matches_short_name=#{matches_short_name}, " \
+        "bare_number_or_unit=#{bare_number_or_unit}, " \
+        "effective_name=#{effective_name.inspect}"
+      )
     end
+
+    # Load all options
+    options = {
+      name:        { value: effective_name,      language: params[:name_lang] },
+      occupation:  { value: params[:occupation], language: params[:name_lang] },
+      url:         { value: params[:url],        language: ""                 },
+    }
+
+    if @disambiguating_description
+      options[:disambiguating_description] = {
+        value:    @disambiguating_description,
+        language: "en"
+      }
+    end
+
     if @address.present?
       options.merge!({
-        street_address: { value: @street_address, language: params[:name_lang], rdfs_class_name: "PostalAddress" },
-        postal_code: { value: @postal_code, language: "", rdfs_class_name: "PostalAddress" },
+        street_address:   { value: @street_address,   language: params[:name_lang], rdfs_class_name: "PostalAddress" },
+        postal_code:      { value: @postal_code,      language: "",                rdfs_class_name: "PostalAddress" },
         address_locality: { value: @address_locality, language: params[:name_lang], rdfs_class_name: "PostalAddress" },
-        address_region: { value: @address_region, language: params[:name_lang], rdfs_class_name: "PostalAddress" },
-        address_country: { value: @address_country, language: params[:name_lang], rdfs_class_name: "PostalAddress" },
-        address: { value: @address, language: params[:name_lang]},
-        longitude: { value: @longitude, language: "" },
-        latitude: { value: @latitude, language: "" },
-        same_as: { value: @same_as, language: "" }
+        address_region:   { value: @address_region,   language: params[:name_lang], rdfs_class_name: "PostalAddress" },
+        address_country:  { value: @address_country,  language: params[:name_lang], rdfs_class_name: "PostalAddress" },
+        address:          { value: @address,          language: params[:name_lang] },
+        longitude:        { value: @longitude,        language: "" },
+        latitude:         { value: @latitude,         language: "" },
+        same_as:          { value: @same_as,          language: "" }
       })
     end
 
@@ -195,20 +199,25 @@ class LinkedDataController < ApplicationController
 
     # call condenser condenser_create_linked_resource 
     new_entity = helpers.condenser_create_linked_resource params[:rdfs_class], params[:seedurl], options
-   
+
     puts "new_entity: #{new_entity.inspect}"
+
+    data = nil
+    stat = nil
 
     # Link to new resource and returns the event 
     if new_entity["statements"].present?
-      data = helpers.condenser_add_linked_data params[:statement_id], current_user.name, 
-        { 
+      data = helpers.condenser_add_linked_data params[:statement_id], current_user.name,
+        {
           rdfs_class: params[:rdfs_class],
           uri: new_entity["uri"],
           name: new_entity["statements"]["name_#{params[:name_lang]}"]["value"]
         }
-      
+
       @event = data["statements"]
-      stat = @event.select{ |_n,v| v["id"] == params[:statement_id].to_i }.flatten[1]
+      if @event.present?
+        stat = @event.find { |_n, v| v["id"] == params[:statement_id].to_i }&.last          # safer than select.flatten[1]
+      end
     end
 
     if @event.blank?
@@ -217,7 +226,7 @@ class LinkedDataController < ApplicationController
     else
       @subject_uri = data["uri"]
       @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
-      render partial: "events/render_statement", locals: {stat: stat }
+      render partial: "events/render_statement", locals: { stat: stat }
     end
   end
 
