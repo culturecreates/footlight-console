@@ -19,5 +19,47 @@ class LinkedDataHelperTest < ActionView::TestCase
     assert_equal expected, split_postal_address(input)
   end
 
+  test "builds Google Places API v1 Place Details URL" do
+    place_id = "ChIJnWHJM0sXyUwRBNA5S4k_b3I"
+    
+    expected = "https://places.googleapis.com/v1/places/#{place_id}?fields=addressComponents,formattedAddress,location,types,googleMapsUri&key=#{ENV['GOOGLE_MAPS_API']}"
+
+    assert_equal expected, google_place_details_url(place_id)
+  end
+
+  test "normalizes v1 Place response fixture and splits postal address" do
+    path    = Rails.root.join("test/fixtures/files/google_place_details_v1.json")
+    place   = JSON.parse(File.read(path))
+    details = normalize_place_details(place)
+
+    # This should now look like the legacy shape we already test:
+    # {
+    #   "address_components" => [...],
+    #   "formatted_address"  => "...",
+    #   "geometry"           => { "location" => { "lat", "lng" } },
+    #   "types"              => [...],
+    #   "url"                => "https://maps.google.com/..."
+    # }
+
+    expected_address_parts = [
+      "4145 Av. Beaconsfield",
+      "H4A 2H4",
+      "Montréal",
+      "QC",
+      "CA"
+    ]
+
+    assert_equal expected_address_parts, split_postal_address(details)
+
+    # And we can also sanity-check some of the other normalized fields:
+    assert_equal "4145 Av. Beaconsfield, Montréal, QC H4A 2H4, Canada",
+                 details["formatted_address"]
+
+    assert_in_delta 45.469074, details.dig("geometry", "location", "lat"), 1e-6
+    assert_in_delta(-73.6258608, details.dig("geometry", "location", "lng"), 1e-6)
+
+    assert_equal "https://maps.google.com/?q=4145+Av.+Beaconsfield,+Montréal,+QC+H4A+2H4",
+                 details["url"]
+  end
 
 end

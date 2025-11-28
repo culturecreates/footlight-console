@@ -23,4 +23,93 @@ module LinkedDataHelper
     end
   end
 
+  # Google Place Details: builds the URL for the Places API (Legacy) Place Details
+  # endpoint, including the required `fields` parameter introduced by Google.
+  #
+  # We request:
+  #   - address_components: for street/city/region/country/postal_code
+  #   - geometry: for lat/lng
+  #   - url: deep link to Google Maps for the place
+  #   - types: used to build a disambiguating description
+  #   - formatted_address: full human-readable address
+  #
+  # Keeping this logic in a helper makes it unit-testable without hitting Google.
+  def google_place_details_url_legacy(place_id)
+    fields = %w[
+      address_components
+      geometry
+      url
+      types
+      formatted_address
+    ].join(',')
+
+    "https://maps.googleapis.com/maps/api/place/details/json" \
+      "?place_id=#{place_id}" \
+      "&fields=#{fields}" \
+      "&key=#{ENV['GOOGLE_MAPS_API']}"
+  end
+
+  # Build the Google Places API v1 Place Details URL.
+  #
+  # We now use the "Places API (New)" HTTP endpoint:
+  #   https://places.googleapis.com/v1/places/{place_id}
+  #
+  # and specify the field mask using the `fields` query parameter.
+  # For our use case we only request:
+  #   - addressComponents: structured address parts (street, locality, region, country, postal code)
+  #   - formattedAddress: single human-readable address string
+  #   - location: lat/lng of the place
+  #   - types: type list used to build a disambiguating description
+  #
+  # The API key is passed via the `key` query parameter using ENV['GOOGLE_MAPS_API'].
+  #
+  # NOTE: The unit test in LinkedDataHelperTest explicitly checks that we
+  #       generate this new-style v1 URL, so any change here should be
+  #       reflected in that test.
+  def google_place_details_url(place_id)
+    fields = %w[addressComponents formattedAddress location types googleMapsUri].join(',')
+    "https://places.googleapis.com/v1/places/#{place_id}?fields=#{fields}&key=#{ENV['GOOGLE_MAPS_API']}"
+  end
+
+  # Normalize a Places API v1 "Place" object into the legacy shape that
+  # create_resource previously used when it parsed the legacy /details/json
+  # response. This lets us keep split_postal_address and the rest of the logic
+  # unchanged.
+  #
+  # Returns a hash that looks like the old "details" value:
+  #   {
+  #     "address_components" => [ { "long_name", "short_name", "types" }, ... ],
+  #     "formatted_address"  => "...",
+  #     "geometry"           => { "location" => { "lat" => ..., "lng" => ... } },
+  #     "types"              => [...],
+  #     "url"                => "https://maps.google.com/..."
+  #   }
+  def normalize_place_details(place)
+    address_components = (place["addressComponents"] || []).map do |component|
+      {
+        "long_name"  => component["longText"],
+        "short_name" => component["shortText"] || component["longText"],
+        "types"      => component["types"] || []
+      }
+    end
+
+    geometry = {}
+    if place["location"]
+      geometry = {
+        "location" => {
+          "lat" => place["location"]["latitude"],
+          "lng" => place["location"]["longitude"]
+        }
+      }
+    end
+
+    {
+      "address_components" => address_components,
+      "formatted_address"  => place["formattedAddress"],
+      "geometry"           => geometry,
+      "types"              => place["types"] || [],
+      "url"                => place["googleMapsUri"]
+    }
+  end
+
 end
