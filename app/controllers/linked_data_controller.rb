@@ -200,7 +200,7 @@ class LinkedDataController < ApplicationController
     # call condenser condenser_create_linked_resource 
     new_entity = helpers.condenser_create_linked_resource params[:rdfs_class], params[:seedurl], options
 
-    puts "new_entity: #{new_entity.inspect}"
+    #puts "new_entity: #{new_entity.inspect}"
 
     data = nil
     stat = nil

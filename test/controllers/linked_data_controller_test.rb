@@ -23,7 +23,7 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  # JSON body copied from a real Places API v1 call in your logs
+  # JSON body copied from a real Places API v1 call in logs
   def fake_google_place_body
     {
       "types" => [
@@ -178,10 +178,10 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
            },
            xhr: true
 
-      # We mainly care that the branch runs without error.
+      # Mainly care that the branch runs without error.
       assert_response :success
       assert flash[:danger].blank?
-      # If you later switch to controller-style tests, you can assert that
+      # If later switch to controller-style tests, we can assert that
       # options[:name][:value] == "4145 Av. Beaconsfield, Montréal, QC H4A 2H4, Canada".
     end
   end
