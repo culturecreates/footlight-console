@@ -3,7 +3,7 @@ module WebsitesHelper
   class CcAPI
     include HTTParty
 
-    base_uri  "https://footlight-condenser.herokuapp.com"  # "localhost:3000"
+    base_uri  "localhost:3000" # "https://footlight-condenser.herokuapp.com"  # 
 
     def initialize
     end
