@@ -76,8 +76,10 @@
         <% end %>
       <% end %>
       <!-- Facet button -->
-      <%= link_to source_id_sources_path(source_id: stat["source_id"]), class: 'button' do %>
-        <i class="fa <%= FACET_ICON %> fa-lg"></i>
+      <% if (path = property_path_from_source(stat["source_id"])) %>
+        <%= link_to path, class: 'button' do %>
+          <i class="fa <%= FACET_ICON %> fa-lg"></i>
+        <% end %>
       <% end %>
     </span>   
   <% end %> 

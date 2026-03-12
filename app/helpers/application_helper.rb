@@ -55,37 +55,40 @@ module ApplicationHelper
     return uris_to_delete.include?(uri)
   end
 
-  def make_key prop, lang
-    begin
-      _prop = prop.sub(" ", "_").downcase
-      _lang = lang.downcase
-      key = _prop
-      if lang.present?
-        key += "_#{_lang}"
-      end
-    rescue 
-      key = "failed to make key"
-    end
-    return key
+  def make_key(prop, lang)
+    key = prop.to_s.sub(" ", "_").downcase
+    key += "_#{lang.to_s.downcase}" if lang.present?
+    key
   end
 
-  # Safely display a statement value (cache)
-  # Parse string to JSON if possible
+  def deep_unescape(value)
+    result = value.to_s
+    loop do
+      decoded = CGI.unescapeHTML(result)
+      break if decoded == result
+      result = decoded
+    end
+    result
+  end
+
   def display_statement(statement, *mode)
     return unless statement.present?
 
-    return statement.to_s if mode.include?('raw')
-    
-    html = ''
+    return deep_unescape(statement) if mode.include?('raw')
 
-    begin
-      JSON.parse(statement).each do |v|
-        html += "#{format_http_link(sanitize(v.to_s))} <br>"
+    values =
+      begin
+        parsed = JSON.parse(statement.to_s)
+        parsed.is_a?(Array) ? parsed : [parsed]
+      rescue
+        [statement]
       end
-    rescue
-      html = format_http_link(sanitize(statement.to_s))
-    end
-    
+
+    html = values.map do |v|
+      decoded = deep_unescape(v)
+      format_http_link(sanitize(decoded))
+    end.join("<br>")
+
     html.html_safe
   end
 
@@ -129,5 +132,42 @@ module ApplicationHelper
 
   def dereferenceable_link(uri)
     return "/resource?uri=" + CGI.escape(uri)
+  end
+
+  ###########################
+  # Dashboard metrics section
+  ###########################
+
+  def condenser_get_dashboard_metrics
+    url = "#{ENV['CONDENSER_URL']}/dashboard_metrics.json"
+
+    HTTParty.get(url).parsed_response
+  rescue
+    {}
+  end
+
+  def dashboard_sort_link(column, label, html_options = {})
+    current_sort = @current_sort || "website"
+    current_dir  = @current_dir  || "asc"
+
+    next_dir =
+      if current_sort == column && current_dir == "asc"
+        "desc"
+      else
+        "asc"
+      end
+
+    arrow =
+      if current_sort == column
+        current_dir == "asc" ? " ▲" : " ▼"
+      else
+        " ↕"
+      end
+
+  link_to(
+    label,
+    dashboard_path(sort: column, dir: next_dir),
+    html_options
+  )
   end
 end

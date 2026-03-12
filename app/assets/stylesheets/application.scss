@@ -25,8 +25,8 @@
 @import url('https://fonts.googleapis.com/css?family=Oswald:400,700');
 
  // Update Bulma's global variables
- $family-sans-serif: "Oswald", sans-serif;
- $box-shadow: 0 5px 3px rgba(black, 0.3);
+ $family-sans-serif: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+ $box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 
  // 1. Import the initial variables
 @import "sass/utilities/initial-variables";
@@ -44,11 +44,13 @@
    margin-top: 45px;
  }
 
- body {
-  background-image: url(image_path("paper.jpg"));
-  background-repeat:repeat;
-
- }
+body {
+  background: linear-gradient(
+    180deg,
+    #f8fbff 0%,
+    #f3f8f5 100%
+  );
+}
 
  footer {
    border-top: 1px dashed white;
@@ -56,11 +58,19 @@
    background-repeat:repeat;
  }
 
- .fullscreen {
-   height:70vh;
-   width: auto;
- }
+  html, body {
+    height: 100%;
+  }
 
+  .fullscreen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fullscreen .container {
+    flex: 1;
+  }
 
 .is-overlay {
   pointer-events: none;
@@ -70,23 +80,130 @@ figure.image {
   background-color: lightgray;
 }
 
-.navbar-brand {
-  width: 100%;
-  background-color: black;
-}
-
 .navbar {
-  flex-wrap: wrap;
+  background: white;
+  border-bottom: 1px solid #eee;
 }
 
 .navbar-brand {
-  justify-content: space-between;
+  background: transparent;
 }
 
 
 .card {
-
   .tabs {
     margin-bottom: 0  
   }
+}
+
+/* --------------------------
+   Modern Dashboard Styling
+-------------------------- */
+
+.event-card {
+  border-radius: 16px;
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.event-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+}
+
+.property-box {
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #f1f3f5;
+  transition: all 0.15s ease;
+}
+
+.property-box:hover {
+  border-color: #d0ebff;
+  background: #f8fbff;
+}
+
+.button {
+  transition: all 0.15s ease;
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.source-table thead th {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+  border-bottom: 2px solid #dbdbdb;
+}
+
+.source-table td {
+  vertical-align: top;
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
+.pipeline-column {
+  display: none;
+}
+
+.show-pipeline .pipeline-column {
+  display: table-cell;
+}
+
+/* =========================================================
+Dashboard column group headers
+========================================================= */
+
+/* Group header styling */
+.dashboard-groups th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #666;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #dcdcdc;
+}
+
+/* subtle section separators */
+.dashboard-groups .group-website {
+  border-bottom-color: #9fd3a7;
+}
+
+.dashboard-groups .group-quality {
+  border-bottom-color: #e6c84f;
+}
+
+.dashboard-groups .group-pipeline {
+  border-bottom-color: #e6a94f;
+}
+
+.dashboard-groups .group-scheduling {
+  border-bottom-color: #8ea3e2;
+}
+
+.dashboard-groups th {
+  padding-bottom: 4px;
+}
+
+.table thead tr:nth-child(2) th {
+  padding-top: 6px;
+}
+
+.table thead th:nth-child(3),
+.table tbody td:nth-child(3) {
+  border-right: 1px solid #e5e5e5;
+}
+
+.table thead th:nth-child(5),
+.table tbody td:nth-child(5) {
+  border-right: 1px solid #e5e5e5;
+}
+
+.table thead th:nth-child(7),
+.table tbody td:nth-child(7) {
+  border-right: 1px solid #e5e5e5;
 }

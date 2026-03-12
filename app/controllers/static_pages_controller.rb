@@ -1,15 +1,28 @@
 class StaticPagesController < ApplicationController
   before_action :logged_in_user, only: :export
-  
+ 
   def dashboard
-    if logged_in?
-      #@micropost  = current_user.microposts.build
-      #@feed_items = current_user.feed.paginate(page: params[:page])
-      @websites = Website.where(user: current_user).order(:url)
-      @condenser_websites = helpers.condenser_get_websites
-    end
-  end
+    return unless logged_in?
 
+    sort = params[:sort].presence || cookies[:dashboard_sort] || "website"
+    dir  = params[:dir].presence  || cookies[:dashboard_dir]  || "asc"
+
+    cookies[:dashboard_sort] = sort
+    cookies[:dashboard_dir]  = dir
+
+    @current_sort = sort
+    @current_dir  = dir
+
+    @websites = current_user.websites
+
+    @dashboard_rows =
+      DashboardBuilder.new(
+        websites: @websites,
+        helpers: helpers,
+        sort: sort,
+        dir: dir
+      ).build
+  end
 
   def about
   end
@@ -21,7 +34,7 @@ class StaticPagesController < ApplicationController
     data = helpers.condenser_get_website_events(cookies[:seedurl])
     test_event = data['events'].select {|e| e["statements_status"]["publishable"] ==  true}.last
     if test_event
-      event = helpers.condenser_get_resource(test_event["rdf_uri"])
+      event = safe_resource(test_event["rdf_uri"])
       webpages = event["statements"].select {|_k,v| v["label"] == "Webpage link"}
       @url_to_test_code_snippet = webpages.map {|_k,v| v["value"]}.first
       begin
