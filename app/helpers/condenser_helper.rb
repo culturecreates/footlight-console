@@ -31,6 +31,7 @@ module CondenserHelper
   def condenser_review_all_statements event_id, user_name, review_next = "false", seedurl = ""
     return call_condenser "/resources/#{CGI.escape(event_id)}/reviewed_all.json", :patch, { "event": {"status_origin": user_name}, "review_next": review_next, "seedurl": seedurl}
   end
+  
   def condenser_refresh_rdf_uri_statements id
    # http://localhost:3000/statements/refresh_rdf_uri?rdf_uri=footlight%3A0dd3f982-f9b1-421c-893a-91b75bc14ad2
    return call_condenser "/statements/refresh_rdf_uri.json?rdf_uri=#{CGI.escape(id)}", :patch
@@ -92,10 +93,14 @@ module CondenserHelper
     return call_condenser "/properties/#{property_id}/review_all_statements.json", :patch, { "status": "ok", "status_origin": user_name, "seedurl": seedurl }
   end
 
+  def condenser_get_anomaly_report(seedurl)
+    call_condenser "/websites/#{seedurl}/anomaly_report.json"
+  end
+
   def condenser_url_per_environment
     if Rails.env.development? || Rails.env.test?
-      'https://footlight-condenser.herokuapp.com'
-      #'http://localhost:3000'
+      #'https://footlight-condenser.herokuapp.com'
+      'http://localhost:3000'
     else
       'https://footlight-condenser.herokuapp.com'
     end
@@ -112,7 +117,7 @@ module CondenserHelper
     begin
       if method == :get
         puts "Calling condenser GET #{condenser_url_per_environment + path}"
-        result = HTTParty.get(condenser_url_per_environment + path, basic_auth: auth)
+        result = HTTParty.get(condenser_url_per_environment + path, basic_auth: auth, timeout: 10)
       elsif method == :patch
         result = HTTParty
                  .patch(condenser_url_per_environment + path,
