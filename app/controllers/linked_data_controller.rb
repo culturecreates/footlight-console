@@ -39,7 +39,14 @@ class LinkedDataController < ApplicationController
     else
       @subject_uri = data["uri"]
       @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
-      render partial: "events/render_statement", locals: { stat: stat }
+      respond_to do |format|
+        format.html { redirect_back fallback_location: root_path }
+
+        format.js do
+          render partial: "events/render_statement",
+                locals: { stat: stat }
+        end
+      end
     end
   end
 
@@ -63,7 +70,14 @@ class LinkedDataController < ApplicationController
     else
       @subject_uri = data["uri"]
       @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
-      render partial: "events/render_statement", locals: {stat: stat }
+      respond_to do |format|
+        format.html { redirect_back fallback_location: root_path }
+
+        format.js do
+          render partial: "events/render_statement",
+                locals: { stat: stat }
+        end
+      end
     end
   end
 
@@ -152,7 +166,14 @@ class LinkedDataController < ApplicationController
     else
       @subject_uri = data["uri"]
       @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
-      render partial: "events/render_statement", locals: {stat: stat }
+      respond_to do |format|
+        format.html { redirect_back fallback_location: root_path }
+
+        format.js do
+          render partial: "events/render_statement",
+                locals: { stat: stat }
+        end
+      end
     end
   end
 

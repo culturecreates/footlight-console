@@ -1,56 +1,62 @@
 class EventsController < ApplicationController
   require 'will_paginate/array'
+  require 'set'
   before_action :logged_in_user, only: [:review_event, :destroy]
 
   OLDEST_DATE = "2015-01-01"
 
   def index
-    cookies[:page] = params[:page] if !params[:page].blank?
-    cookies[:view] = params[:view] if !params[:view].blank?
-    cookies[:timeline] = params[:timeline] if !params[:timeline].blank?
-    cookies[:seedurl] = params[:seedurl] if !params[:seedurl].blank?
-    cookies[:image_ratio] = Website.where(url: cookies[:seedurl], user_id: current_user).pluck(:image_ratio).first
-    cookies[:filter] = params[:filter] if !params[:filter].blank?
+    cookies[:page] = params[:page] if params[:page].present?
+    cookies[:view] = params[:view] if params[:view].present?
+    cookies[:timeline] = params[:timeline] if params[:timeline].present?
+    cookies[:seedurl] = params[:seedurl] if params[:seedurl].present?
+    if cookies[:seedurl].present?
+      cookies[:image_ratio] =
+        Website.where(url: cookies[:seedurl], user_id: current_user)
+              .pluck(:image_ratio)
+              .first
+    end
+    cookies[:filter] = params[:filter] if params[:filter].present?
 
     if cookies[:timeline] == "all"
-      data = helpers.condenser_get_website_events(cookies[:seedurl],OLDEST_DATE )
+      data = safe_events(cookies[:seedurl],OLDEST_DATE )
     else
-      data = helpers.condenser_get_website_events(cookies[:seedurl])
-      if data["events"]
-        if  data["events"].count == 0
-          cookies[:timeline] = "all"
-          data = helpers.condenser_get_website_events(cookies[:seedurl],OLDEST_DATE )
-          flash.now[:danger] = "No upcoming events."
-        end
+      data = safe_events(cookies[:seedurl])
+      if data["events"].empty?
+        cookies[:timeline] = "all"
+        data = safe_events(cookies[:seedurl], OLDEST_DATE)
+        flash.now[:danger] = "No upcoming events."
       end
     end
 
-    if data["events"]
-      @event_count = data["events"].count
+    events = data["events"] || []
+    @event_count = events.count
 
-      @events_to_review = helpers.events_by_status(data["events"], "to_review")
-      @events_with_updates = helpers.events_by_status(data["events"], "updated")
-      @events_with_issues = helpers.events_by_status(data["events"], "problem")
-      @events_publishable = helpers.events_by_status(data["events"], "publishable")
-      @events_with_comments = helpers.events_with_comments(data["events"])
-      @events = data["events"]
+      @events_to_review = helpers.events_by_status(events, "to_review")
+      @events_with_updates = helpers.events_by_status(events, "updated")
+      @events_with_issues = helpers.events_by_status(events, "problem")
+      @events_publishable = helpers.events_by_status(events, "publishable")
+      @events_with_comments = helpers.events_with_comments(events)
 
+      @events = events
+      
       ## set filter
-      if cookies[:filter]  == "new"
+      if cookies[:filter] == "new"
         @events = @events_to_review
-      elsif cookies[:filter]  == "updated"
+      elsif cookies[:filter] == "updated"
         @events = @events_with_updates
-      elsif cookies[:filter]  == "flagged"
+      elsif cookies[:filter] == "flagged"
         @events = @events_with_issues
-      elsif cookies[:filter]  == "commented"
+      elsif cookies[:filter] == "commented"
         @events = @events_with_comments
-      elsif cookies[:filter]  == "publishable"
+      elsif cookies[:filter] == "publishable"
         @events = @events_publishable
       end
+      
       ## prevent 0 results in a filter
-      if  @events.count == 0
+      if @events.empty?
         cookies[:filter] = 'all'
-        @events = data["events"]  
+        @events = events
       end
 
       # paginate
@@ -60,18 +66,26 @@ class EventsController < ApplicationController
         per_page = 1000
       end
 
-      if @events.count <= per_page * (cookies[:page].to_i - 1)
-        cookies[:page] = 1
+      page = cookies[:page].to_i
+      page = 1 if page <= 0
+      if @events.count <= per_page * (page - 1)
+        page = 1
       end
-      @events = @events.paginate(page: cookies[:page], per_page: per_page)
+      @events = @events.paginate(page: page, per_page: per_page)
+
+      uris = @events.map { |e| e["rdf_uri"] }
+
+      uris_with_posts = Micropost
+        .where(related_subject_uri: uris)
+        .distinct
+        .pluck(:related_subject_uri)
+        .to_set
 
       @events.each do |event|
-        microposts = Micropost.where(related_subject_uri: event["rdf_uri"])
-        event[:microposts] =  microposts.present?
+        event[:microposts] = uris_with_posts.include?(event["rdf_uri"])
       end
-    end
 
-    if !@events.blank?
+    if @events.present?
       if cookies[:view] == "list"
         render 'index_list'
       else
@@ -84,7 +98,12 @@ class EventsController < ApplicationController
   end
 
   def show
-    data = helpers.condenser_get_resource(params[:id])
+    data = safe_resource(params[:id])
+    unless data.present?
+      flash[:danger] = "Error getting Event."
+      redirect_to root_path and return
+    end
+
     @seedurl = data["seedurl"]
     cookies[:seedurl] = @seedurl
     @subject_uri = data["uri"]
@@ -123,8 +142,14 @@ class EventsController < ApplicationController
       ## add microposts
       @microposts_all_statements = { params[:id] => helpers.get_event_microposts(@event, @subject_uri) }
 
-      if @archive_date.to_date <= Date.today
-        flash.now[:info] = "Footlight is no longer automatically updating this event daily (#{@archive_date.to_date})."
+      if @archive_date.present?
+        begin
+          if Date.parse(@archive_date.to_s) <= Date.today
+            flash.now[:info] = "Footlight is no longer automatically updating this event daily (#{@archive_date})."
+          end
+        rescue
+          Rails.logger.warn "Invalid archive_date format: #{@archive_date}"
+        end
       end
     else 
       flash[:danger] = "Error getting Event."
@@ -148,7 +173,7 @@ class EventsController < ApplicationController
 
       # # micro post
       # msg = data.dig("statements","title_en","value")
-      # msg = data.dig("statements","title_fr","value") if msg.blank?
+      # msg = data.dig("statements","title_fr","value") if msg.present?
       # helpers.add_micropost "Reviewed Event #{msg}"
     end
   end

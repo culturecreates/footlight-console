@@ -22,23 +22,32 @@ class ResourceController < ApplicationController
   # GET /resource 
   def index 
     if params[:uri] 
-      @resource = helpers.condenser_get_resource(params[:uri])
+      @resource = safe_resource(params[:uri])
+
+      unless @resource["uri"].present?
+        flash[:danger] = "Could not load resource."
+        redirect_to root_path and return
+      end
+
       @seedurl = @resource["seedurl"]
-      @statements =  @resource["statements"]
-      @webpage_url = @statements.dig('webpage_link_en','value') || @statements.dig('webpage_link_fr','value')
-      @webpage_url_fr = @statements.dig('webpage_link_fr','value') 
+      @statements = @resource["statements"] || {}
+      @webpage_url =
+        @statements.dig('webpage_link_en','value') ||
+        @statements.dig('webpage_link_fr','value') ||
+        @statements.dig('url','value')
+      @webpage_url_fr = @statements.dig('webpage_link_fr','value')
 
       @subject_uri = @resource["uri"]
 
-      # microposts
-      if @statements
-        @microposts_all_statements = { params[:uri] => helpers.get_resource_microposts(@resource, @subject_uri) }
-      end
-      # derived links
-      @links = helpers.condenser_search_statements(@subject_uri)  
+      @microposts_all_statements = {
+        params[:uri] => helpers.get_resource_microposts(@resource, @subject_uri)
+      }
+
+      @links = safe_search_statements(@subject_uri)
       render 'show'
     else
-      @resources = helpers.condenser_get_website_resources(cookies[:seedurl])
+      seed = params[:seedurl] || cookies[:seedurl]
+      @resources = safe_website_resources(seed)
     end
   end
 
