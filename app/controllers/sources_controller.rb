@@ -1,4 +1,5 @@
 class SourcesController < ApplicationController
+  include AnomalyHelper
   before_action :logged_in_user, only: :update
 
   OLDEST_DATE = "2015-01-01"
@@ -17,49 +18,52 @@ class SourcesController < ApplicationController
       
   end
 
-  def source_id
-    source_id = params[:source_id]
-    property_id = helpers.condenser_get_property_id(source_id)
-    redirect_to source_path(id: property_id)
-  end
-
-  # Call condenser_get_property_statements seedurl, property, startDate = nil, endDate = nil
+  # Call safe_property_statements seedurl, property, startDate = nil, endDate = nil
   def show
     @property_id = params[:id]
     cookies[:seedurl] = params[:seedurl] if params[:seedurl].present?
     @seedurl = cookies[:seedurl]
-    cookies[:timeline] = params[:timeline] if !params[:timeline].blank?
+    cookies[:timeline] = params[:timeline] if params[:timeline].present?
 
-    if cookies[:timeline] == "all"
-      @statements = helpers.condenser_get_property_statements(cookies[:seedurl], @property_id, OLDEST_DATE )
-    else
-      @statements = helpers.condenser_get_property_statements(cookies[:seedurl], @property_id)
-     
-      if @statements.count == 0
-        cookies[:timeline] = "all"
-        @statements = helpers.condenser_get_property_statements(cookies[:seedurl], @property_id, OLDEST_DATE )
-        flash.now[:danger] = "No upcoming events."
+    raw =
+      if cookies[:timeline] == "all"
+        safe_property_statements(@seedurl, @property_id, OLDEST_DATE)
+      else
+        safe_property_statements(@seedurl, @property_id)
       end
+
+    # 🔴 HARD STOP if property does not exist
+    unless raw && raw["property_labels"].present?
+      raise ActiveRecord::RecordNotFound
     end
+
+    @statements = raw || {}
+
+    @statements["property_labels"] ||= []
+    @statements["property_ids"] ||= []
+    @statements["events"] ||= {}
 
     @property_labels = @statements["property_labels"] ||= []
     @property_ids = @statements["property_ids"] ||= []
     @events = @statements["events"] ||= []
-    @events = @events.sort_by {|n,v| v["archive_date"]["archive_date"]}
+    @events = @events.sort_by do |_, v|
+      v.dig("archive_date", "archive_date") || Date.new(1900)
+    end
 
+    props = @property_labels.drop(1).reject { |p| p.to_s.strip.downcase == "title" }
+    @stats = compute_source_statistics(@events, props)
 
-     property_title = @property_labels[1] ||= ""
-     #TO DO: make one language only
-     property_language = ['','en','fr'] #  @statements["events"].first[1]["language"]
-     #create list of URIs
-     uris =  @events&.map {|statement| statement[0]}
+    property_title = @property_labels[1] ||= ""
+    #TO DO: make one language only
+    property_language = ['','en','fr'] #  @statements["events"].first[1]["language"]
+    #create list of URIs
+    uris =  @events&.map {|statement| statement[0]}
 
+    #  @microposts_all_statements = {"adr:spec-qc-ca_neuf-titre-provisoire"=>{"title_fr"=>[#<Micropost id: 142, ...>]}}
 
-     #  @microposts_all_statements = {"adr:spec-qc-ca_neuf-titre-provisoire"=>{"title_fr"=>[#<Micropost id: 142, ...>]}}
-
-     microposts = helpers.get_property_microposts(uris, property_title, property_language)
+    microposts = helpers.get_property_microposts(uris, property_title, property_language)
      
-     @microposts_all_statements = Hash.new { |h,k| h[k] = {} }
+    @microposts_all_statements = Hash.new { |h,k| h[k] = {} }
      if microposts.count > 0 
       ##key = helpers.make_key(property_title, property_language)
        # @microposts_all_statements = microposts.group_by(&:related_subject_uri)

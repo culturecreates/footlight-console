@@ -1,69 +1,141 @@
-<div class="columns  is-centered">
-  <div class="column">
-    <center>
-      <h1 class="title"> <%=  @events.count %> <%= "Upcoming " if cookies[:timeline] == "upcoming" %> Events</h1>
-    </center>
+<section class="section pt-5">
+
+  <!-- Header -->
+  <div class="container">
+
+    <div class="level mb-5">
+      <div class="level-left">
+        <div>
+          <h1 class="title is-3 mb-1">
+            <%= @events.count %>
+            <%= "Upcoming " if cookies[:timeline] == "upcoming" %>
+            Events
+          </h1>
+          <p class="subtitle is-6 has-text-grey">
+            Structured knowledge extracted from source
+          </p>
+        </div>
+      </div>
+
+      <div class="level-right">
+        <%= link_to "Review All",
+              source_path(params[:id], seedurl: @seedurl),
+              method: :patch,
+              class: "button is-primary is-medium is-rounded use-loading" %>
+      </div>
+    </div>
+
+    <!-- Timeline toggle -->
+    <div class="mb-5">
+      <%= render partial: "timeline",
+            locals: {
+              url_upcoming: source_path(params[:id], timeline: "upcoming"),
+              url_all: source_path(params[:id], timeline: "all")
+            } %>
+    </div>
+
   </div>
-</div>
 
-<%= render partial: "timeline", locals: {url_upcoming: source_path(id: params[:id], timeline: "upcoming"), url_all: source_path(id: params[:id], timeline: "all")} %>
+  <!-- Events -->
+  <% props = @property_labels.drop(1).reject { |p| p.to_s.strip.downcase == "title" } %>
+  <div class="container">
 
+    <div class="table-container">
+      <table class="table is-fullwidth is-striped is-hoverable is-size-7 source-table">
 
- <%= link_to "Review All", source_path(id: params[:id], seedurl: @seedurl), method: :patch, class: "button use-loading is-primary " %>
-  
- 
-<section>
-  <table class="table is-striped is-hoverable is-fullwidth">
-    <thead>
-      <tr>
-        <th width="30%">Event</th>
-        <% @property_labels.drop(1).each do |p| %>
-          <th><%= p %></th>
+      <thead>
+        <tr>
+          <th style="width: 25%">Title</th>
+          <% props.each do |p| %>
+            <th><%= p.humanize %></th>
+          <% end %>
+          <th style="width: 60px">⚠</th>
+          <th style="width: 100px"></th>
+        </tr>
+      </thead>
+
+      <tbody>
+
+        <% @events.each do |uri, statements| %>
+
+          <% title =
+              statements["title_fr"]&.dig("value") ||
+              statements["title_en"]&.dig("value") %>
+
+          <% event_health = compute_event_health(statements, {}, timeline: cookies[:timeline] || :upcoming) %>
+
+          <tr>
+
+            <!-- Title column -->
+            <td>
+              <%= link_to display_statement(title, "raw"),
+                          event_path(uri),
+                          class: "has-text-weight-semibold has-text-link-dark" %>
+
+              <% if statements.first[1]["subject"] %>
+                <div class="has-text-grey-light is-size-7">
+                  <%= statements.first[1]["subject"].split("#{@seedurl}_")[1] %>
+                </div>
+              <% end %>
+            </td>
+
+            <!-- Property columns -->
+            <% props.each do |p| %>
+              <td>
+                <% [:fr, :en, nil].each do |lang| %>
+                  <% key = make_key(p, lang&.to_s) %>
+                  <% st = statements[key] %>
+                  <% next unless st %>
+
+                  <% value = st.is_a?(Hash) ? st["value"] : st %>
+
+                  <div class="source-cell">
+                    <%= display_statement(value, "raw") %>
+
+                    <% if event_health[:properties][key] %>
+                      <% ph = event_health[:properties][key] %>
+
+                      <% if ph[:severity] == :critical %>
+                        <span class="tag is-danger is-light is-small ml-1">!</span>
+                      <% elsif ph[:severity] == :warning %>
+                        <span class="tag is-warning is-light is-small ml-1">⚠</span>
+                      <% end %>
+                    <% end %>
+                  </div>
+
+                <% end %>
+              </td>
+            <% end %>
+
+            <!-- Event severity column -->
+            <td class="has-text-centered">
+              <% case event_health[:event_severity] %>
+              <% when :critical %>
+                <span class="tag is-danger">Problem</span>
+              <% when :warning %>
+                <span class="tag is-warning">Check</span>
+              <% else %>
+                <span class="tag is-success">OK</span>
+              <% end %>
+            </td>
+
+          </tr>
+
         <% end %>
-      </tr>
-    </thead>
-    <tbody>
-    <% @events.each do |uri,statements| %>
-      <tr>
-        <td>
-          <% if  statements["title_fr"] %>
-            <% title = statements["title_fr"]["value"] if statements["title_fr"]%>
-          <% else %>
-            <% title = statements["title_en"]["value"] if statements["title_en"]%>
-          <% end %>
-          <%= link_to title, event_path(id: uri) %>
-          <p class="is-size-7 has-text-grey"> <%= statements.first[1]["subject"].split("#{@seedurl}_")[1] if statements.first[1]["subject"]%> </p>
-        </td>
-        <td>
-          <div class="columns">
-          <% @property_labels.drop(1).each do |p| %>
-            <% if statements[make_key(p,'fr')]  %>
-              <div class="column statement">
-                <%= render partial: 'statement', locals: { stat: statements[make_key(p,'fr')], can_edit: true, multiple_events: true }  %>
-              </div>
-            <% end %>
-            <% if statements[make_key(p,'en')]  %>
-              <div class="column statement">
-                <%= render partial: 'statement', locals: { stat: statements[make_key(p,'en')], can_edit: true, multiple_events: true } %>
-              </div>
-            <% end %>
-            <% if statements[make_key(p,'')]  %>
-              <div class="column statement">
-                <%= render partial: 'statement', locals: { stat: statements[make_key(p,'')], can_edit: true, multiple_events: true } %>
-              </div>
-            <% end %>
-          <% end %>
-          </div>
-        </td>
-      </tr>
-    <% end %>
-    </tbody>
-  </table>
-  <center>
-  <%= link_to "Review All", source_path(id: params[:id], seedurl: @seedurl), method: :patch, class: "button use-loading is-primary is-large" %>
-  <p class="is-size-5"> Review across all events, except for flagged properties.</p>
-    <br>
-    <br>
-    <br>
-  </center>
+
+      </tbody>
+
+      </table>
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="has-text-centered mt-5">
+      <%= link_to "Review All",
+            source_path(params[:id], seedurl: @seedurl),
+            method: :patch,
+            class: "button is-primary is-medium is-rounded use-loading" %>
+    </div>
+
+  </div>
+
 </section>

@@ -2,10 +2,10 @@
 
     <div class="columns  is-centered">
         <div class="column  is-half">
-            <center>
+            
                 <h1 class="title">Event Properties</h1>
                 <h3 class="subtitle"> View a property across all events </h3>
-            </center>
+            
         </div>
     </div>
 
@@ -22,7 +22,7 @@
             <% @sources.each do |source|%>
                 <tr>
                     <td>
-                        <%= link_to source['property'], source_path(id: source['property_id']) %>
+                        <%= link_to source['property'], source_path(source['property_id']) %>
                     </td>
                     <td>
                         <%= source['language'] %>
