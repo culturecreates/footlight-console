@@ -1,36 +1,218 @@
 <% provide(:title, "Edit Website") %>
-<div class="fullscreen">
+
+<div class="section">
   <div class="container">
-  <div class="columns  is-centered">
-    <div class="column is-one-third ">
-      <h1 class="title is-centered">Website Settings</h1>
-      <%= form_for(@website) do |f| %>
-        <%= render 'shared/error_messages', object: f.object %>
 
-         <div class="field">
-          <%= f.label :timezone, class: 'label' %> 
-          <%= f.select :timezone, ['','Pacific Time (US & Canada)', 'Mountain Time (US & Canada)','Central Time (US & Canada)','Eastern Time (US & Canada)','Atlantic Time (Canada)','Newfoundland'] %>
-        </div>
+    <h1 class="title has-text-centered mb-5">Website Settings</h1>
 
-        <div class="field">
-          <%= f.label "Display iFrame when viewing events", class: 'label' %>  
-          <%= f.select :iframe, [:true, :false]  %>
-        </div>
-
-        <div class="field">
-          <%= f.label "URL Key", class: 'label' %>
-          <%= f.text_field :url, class: 'input' %>
-        </div>
-
-        <div class="field">
-          <%= f.label :image_ratio, class: 'label' %>  
-          <%= f.select :image_ratio, ['','1:1', '3:1','5:3','16:9'] %>
-        </div>
-        <center>
-          <%= f.submit "Save changes", class: "button is-primary is-large" %>
-        </center>
-      <% end %>
+    <div class="tabs is-boxed is-centered" id="settings-tabs">
+      <ul>
+        <li class="is-active" data-tab="general"><a>General</a></li>
+        <li data-tab="weights"><a>Weights</a></li>
+        <li data-tab="anomaly"><a>Anomaly</a></li>
+        <li data-tab="monitoring"><a>Monitoring</a></li>
+      </ul>
     </div>
-  </div>
+
+    <%= form_for(@website) do |f| %>
+      <%= render 'shared/error_messages', object: f.object %>
+
+      <!-- ===================== -->
+      <!-- GENERAL TAB -->
+      <!-- ===================== -->
+      <div class="tab-content" id="general">
+
+        <div class="box">
+          <p class="mb-4 has-text-grey">
+            Core website display configuration.
+          </p>
+
+          <div class="field">
+            <%= f.label :timezone, class: 'label' %>
+            <%= f.select :timezone,
+                ['','Pacific Time (US & Canada)', 'Mountain Time (US & Canada)',
+                 'Central Time (US & Canada)','Eastern Time (US & Canada)',
+                 'Atlantic Time (Canada)','Newfoundland'],
+                {}, class: "input" %>
+          </div>
+
+          <div class="field">
+            <%= f.label "Display iFrame when viewing events", class: 'label' %>
+            <%= f.select :iframe, [:true, :false], {}, class: "input" %>
+          </div>
+
+          <div class="field">
+            <%= f.label "URL Key", class: 'label' %>
+            <%= f.text_field :url, class: 'input' %>
+          </div>
+
+          <div class="field">
+            <%= f.label :image_ratio, class: 'label' %>
+            <%= f.select :image_ratio,
+                ['','1:1', '3:1','5:3','16:9'],
+                {}, class: "input" %>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== -->
+      <!-- WEIGHTS TAB -->
+      <!-- ===================== -->
+      <div class="tab-content is-hidden" id="weights">
+        <div class="box">
+          <p class="mb-4 has-text-grey">
+            Adjust importance of each property in dashboard health scoring.
+            Higher weight increases impact.
+          </p>
+
+          <% WebsiteDefaults::PROPERTY_WEIGHTS.each do |prop, default| %>
+            <div class="field">
+              <%= label_tag "website_weight_overrides_#{prop}",
+                    "#{prop.humanize}",
+                    class: 'label' %>
+
+              <%= number_field_tag "website[weight_overrides][#{prop}]",
+                    @website.weight_overrides&.[](prop) || default,
+                    class: 'input',
+                    min: 0,
+                    step: 1 %>
+
+              <p class="is-size-7 has-text-grey">
+                Default: <%= default %>
+              </p>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <!-- ===================== -->
+      <!-- ANOMALY TAB -->
+      <!-- ===================== -->
+      <div class="tab-content is-hidden" id="anomaly">
+        <div class="box">
+
+          <p class="mb-4 has-text-grey">
+            Control how aggressively the system flags suspicious event data.
+          </p>
+
+          <div class="field">
+            <%= f.label :far_future_years,
+                  "Flag events more than X years in the future",
+                  class: 'label' %>
+
+            <%= f.number_field :far_future_years,
+                  value: @website.effective_far_future_years,
+                  class: 'input',
+                  min: 0,
+                  step: 1 %>
+
+            <p class="is-size-7 has-text-grey">
+              Events beyond this threshold increase anomaly ratio.
+            </p>
+          </div>
+
+          <div class="field">
+            <%= f.label :old_past_years,
+                  "Flag events older than X years in the past",
+                  class: 'label' %>
+
+            <%= f.number_field :old_past_years,
+                  value: @website.effective_old_past_years,
+                  class: 'input',
+                  min: 0,
+                  step: 1 %>
+
+            <p class="is-size-7 has-text-grey">
+              Older events may indicate stale or unmaintained feeds.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ===================== -->
+      <!-- MONITORING TAB -->
+      <!-- ===================== -->
+      <div class="tab-content is-hidden" id="monitoring">
+
+        <div class="box">
+
+          <p class="mb-4 has-text-grey">
+            Control dashboard monitoring thresholds used to evaluate
+            website ingestion health.
+          </p>
+
+          <div class="field">
+            <%= f.label :min_publishable_ratio,
+                  "Minimum publishable ratio",
+                  class: 'label' %>
+
+            <%= f.number_field :min_publishable_ratio,
+                  value: @website.effective_min_publishable_ratio,
+                  class: 'input',
+                  step: 0.01,
+                  min: 0,
+                  max: 1 %>
+
+            <p class="is-size-7 has-text-grey">
+              Below this ratio the website is considered unhealthy.
+            </p>
+          </div>
+
+          <div class="field">
+            <%= f.label :warning_days_since_last_webpage,
+                  "Warning if no new webpage for X days",
+                  class: 'label' %>
+
+            <%= f.number_field :warning_days_since_last_webpage,
+                  value: @website.effective_warning_days_since_last_webpage,
+                  class: 'input',
+                  min: 0,
+                  step: 1 %>
+          </div>
+
+          <div class="field">
+            <%= f.label :critical_days_since_last_webpage,
+                  "Critical if no new webpage for X days",
+                  class: 'label' %>
+
+            <%= f.number_field :critical_days_since_last_webpage,
+                  value: @website.effective_critical_days_since_last_webpage,
+                  class: 'input',
+                  min: 0,
+                  step: 1 %>
+          </div>
+
+          <div class="field">
+            <%= f.label :warning_event_horizon_days,
+                  "Warning event horizon (days)",
+                  class: 'label' %>
+
+            <%= f.number_field :warning_event_horizon_days,
+                  value: @website.effective_warning_event_horizon_days,
+                  class: 'input',
+                  step: 1 %>
+          </div>
+
+          <div class="field">
+            <%= f.label :critical_event_horizon_days,
+                  "Critical event horizon (days)",
+                  class: 'label' %>
+
+            <%= f.number_field :critical_event_horizon_days,
+                  value: @website.effective_critical_event_horizon_days,
+                  class: 'input',
+                  step: 1 %>
+          </div>
+
+        </div>
+
+      </div>
+      <div class="has-text-centered mt-5">
+        <%= f.submit "Save changes", class: "button is-primary is-large" %>
+      </div>
+
+    <% end %>
+
   </div>
 </div>
