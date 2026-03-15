@@ -18,7 +18,7 @@ class DashboardBuilder
     @sort     = sort
     @dir      = dir
 
-    condenser = CondenserStatusService.new(helpers)
+    condenser = CondenserStatusService.new(Condenser::API)
 
     @condenser_websites = condenser.websites
     @metrics_index      = condenser.metrics

@@ -12,9 +12,8 @@ class DashboardMetrics
     "warning"  => 1.0
   }.freeze
 
-  def initialize(website, helpers, condenser)
+  def initialize(website, condenser)
     @website = website
-    @helpers = helpers
     @condenser = condenser
   end
 
@@ -31,15 +30,21 @@ class DashboardMetrics
   private
 
   def compute_fresh(seedurl)
-    raw = @helpers.condenser_get_website_events(seedurl) rescue []
+    raw = @condenser.events(seedurl).parsed_response
 
-    if raw.is_a?(Hash)
-      events = Array(raw["events"])
-      total_events = raw["total_events"] || events.size
-    else
-      events = Array(raw)
-      total_events = events.size
-    end
+    events =
+      if raw.is_a?(Hash)
+        Array(raw["events"])
+      else
+        Array(raw)
+      end
+
+    total_events =
+      if raw.is_a?(Hash)
+        raw["total_events"] || events.size
+      else
+        events.size
+      end
 
     anomaly = EventAnomalyEngine.new(events, @website).analyze
     overdue_days = events.map { |e| days_overdue(e) }
@@ -55,13 +60,13 @@ class DashboardMetrics
     }
   end
 
-  # def cache_key_for(seedurl)
-  #   "dashboard_metrics:#{seedurl}"
-  # end
-
-  def cache_key_for(seedurl, start_date = nil, end_date = nil)
-    "dashboard_metrics:#{seedurl}:#{start_date}:#{end_date}"
+  def cache_key_for(seedurl)
+    "dashboard_metrics:#{seedurl}"
   end
+
+  # def cache_key_for(seedurl, start_date = nil, end_date = nil)
+  #   "dashboard_metrics:#{seedurl}:#{start_date}:#{end_date}"
+  # end
 
   # -----------------------------
   # HEALTH
