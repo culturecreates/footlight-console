@@ -7,7 +7,7 @@ class SourcesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get show" do
-    get sources_show_url(id: 1)
+    get sources_show_url(id: 1, seedurl: "fass-ca")
     assert_response :success
   end
 
