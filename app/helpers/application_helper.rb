@@ -139,9 +139,7 @@ module ApplicationHelper
   ###########################
 
   def condenser_get_dashboard_metrics
-    url = "#{ENV['CONDENSER_URL']}/dashboard_metrics.json"
-
-    HTTParty.get(url).parsed_response
+    Condenser::API.dashboard_metrics
   rescue
     {}
   end

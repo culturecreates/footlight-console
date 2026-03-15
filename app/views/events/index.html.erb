@@ -1,9 +1,7 @@
 <% provide(:title, "#{cookies[:seedurl]} - All events") %>
 
 <section class="container">
-  <center>
     <h2 class="title"><%= @event_count %> <%= t('.upcoming') if cookies[:timeline] != "all" %> <%= t('.event') %> </h2>
-  </center>
   <br>
   <%= render 'event_stats' %>
 </section>
@@ -25,7 +23,7 @@
         <% end %>
       </figure>
       <div class="is-overlay event-title">
-        <%= sanitize(event["title"]) %>
+        <%= display_statement(event["title"]) %>
       </div>
       <span class="is-overlay event-status large-icons">
         <%= render 'status_icons', event: event %>

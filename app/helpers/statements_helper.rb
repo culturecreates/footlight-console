@@ -114,7 +114,7 @@ module StatementsHelper
   end
 
   # using a statement id which could be nested, find the top most statement
-  def get_top_statment_to_display(stats, id)
+  def get_top_statement_to_display(stats, id)
 
     stat = stats.select{ |n,v| v["id"] == id.to_i }.flatten[1]
     return stat unless stat.nil?

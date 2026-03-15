@@ -46,13 +46,13 @@
                 </span>
                 <% if check_for_manual_deletion(complete_array, tag['uri']) %>
                   <%= link_to "undo",
-                            linked_data_remove_linked_data_path(statement_id: stat['id'], name:  tag['label'] , rdfs_class: tag_class,  uri: tag['uri']),
+                            remove_linked_data_path(statement_id: stat['id'], name:  tag['label'] , rdfs_class: tag_class,  uri: tag['uri']),
                             method: :patch,
                             remote: true,
                             class: "tag is-white" %>
                 <% else %>
                   <%= link_to "",
-                            linked_data_remove_linked_data_path(statement_id: stat['id'], name:  tag['label'] , rdfs_class: tag_class,  uri: tag['uri']),
+                            remove_linked_data_path(statement_id: stat['id'], name:  tag['label'] , rdfs_class: tag_class,  uri: tag['uri']),
                             method: :patch,
                             remote: true,
                             class: "tag is-white is-delete" %>

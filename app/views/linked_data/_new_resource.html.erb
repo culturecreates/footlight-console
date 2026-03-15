@@ -6,7 +6,7 @@
     </p>
   </header>
   <div class="card-content"> 
-    <%= form_tag(linked_data_create_resource_path(statement_id: @statement_id), method: :post, remote: true) do -%>
+    <%= form_tag(create_resource_path(statement_id: @statement_id), method: :post, remote: true) do -%>
       <%= hidden_field_tag 'rdfs_class', @expected_class %>
       <%= hidden_field_tag 'seedurl', cookies[:seedurl] %>
     <div class="field has-addons">
