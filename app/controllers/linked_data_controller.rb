@@ -26,7 +26,7 @@ class LinkedDataController < ApplicationController
         params[:uri].split('---').second # passed by select2 autocomplete
       end
 
-    data = helpers.condenser_add_linked_data  params[:statement_id], current_user.name,
+    data = Condenser::API.add_linked_data  params[:statement_id], current_user.name,
                {rdfs_class: params[:rdfs_class],
                 uri: uri,
                 name: name}
@@ -38,7 +38,7 @@ class LinkedDataController < ApplicationController
       redirect_back(fallback_location: root_path)
     else
       @subject_uri = data["uri"]
-      @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
+      @microposts_all_statements = build_microposts(@event, @subject_uri) 
       respond_to do |format|
         format.html { redirect_back fallback_location: root_path }
 
@@ -57,7 +57,7 @@ class LinkedDataController < ApplicationController
     params[:name]
     params[:statement_id]
  
-    data = helpers.condenser_remove_linked_data params[:statement_id], current_user.name,
+    data = Condenser::API.remove_linked_data params[:statement_id], current_user.name,
                {rdfs_class: params[:rdfs_class],
                 uri: params[:uri],
                 name: params[:name]}
@@ -69,7 +69,7 @@ class LinkedDataController < ApplicationController
       redirect_back(fallback_location: root_path)
     else
       @subject_uri = data["uri"]
-      @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
+      @microposts_all_statements = build_microposts(@event, @subject_uri) 
       respond_to do |format|
         format.html { redirect_back fallback_location: root_path }
 
@@ -143,13 +143,13 @@ class LinkedDataController < ApplicationController
     end
 
     # call condenser condenser_create_linked_resource 
-    new_entity = helpers.condenser_create_linked_resource params[:rdfs_class], params[:seedurl], options
+    new_entity = Condenser::API.create_linked_resource params[:rdfs_class], params[:seedurl], options
    
     puts "new_entity: #{new_entity.inspect}"
 
     # Link to new resource and returns the event 
     if new_entity["statements"].present?
-      data = helpers.condenser_add_linked_data params[:statement_id], current_user.name, 
+      data = Condenser::API.add_linked_data params[:statement_id], current_user.name, 
         { 
           rdfs_class: params[:rdfs_class],
           uri: new_entity["uri"],
@@ -165,7 +165,7 @@ class LinkedDataController < ApplicationController
       redirect_back(fallback_location: root_path)
     else
       @subject_uri = data["uri"]
-      @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
+      @microposts_all_statements = build_microposts(@event, @subject_uri) 
       respond_to do |format|
         format.html { redirect_back fallback_location: root_path }
 

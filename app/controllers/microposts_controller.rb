@@ -4,21 +4,27 @@ class MicropostsController < ApplicationController
 
 
   def index
-    @seedurl = params[:seedurl] || cookies[:seedurl] 
-    if @seedurl
-      data = helpers.condenser_get_website_events(@seedurl)
-      if data["events"]
-        events = data["events"]
-        rdf_url_list = events.map {|e| e["rdf_uri"]}
-        @microposts = Micropost.where(related_subject_uri: [rdf_url_list])
-      else
-        flash[:danger] = "No events available to check for comments on."
-        redirect_back(fallback_location: root_path)
-      end
-    else
+    @seedurl = params[:seedurl] || cookies[:seedurl]
+
+    unless @seedurl
       flash[:danger] = "Please select a website first."
-      redirect_back(fallback_location: root_path)
+      return redirect_back(fallback_location: root_path)
     end
+
+    data = safe_events(seedurl: @seedurl, start_date: EventsController::OLDEST_DATE)
+
+    unless data["events"]
+      flash[:danger] = "No events available to check for comments on."
+      return redirect_back(fallback_location: root_path)
+    end
+
+    events = data["events"]
+
+    rdf_url_list = events.map { |e| e["rdf_uri"] }.uniq
+
+    @timeline = cookies[:timeline] || "upcoming"
+
+    @microposts = Micropost.where(related_subject_uri: rdf_url_list).to_a
   end
 
   def new
@@ -38,13 +44,13 @@ class MicropostsController < ApplicationController
     @micropost = current_user.microposts.build(micropost_params)
     if @micropost.save
       ##FLAG work goes here
-      data = helpers.condenser_flag_statement @micropost.related_statement_id, current_user.name
+      data = Condenser::API.flag_statement @micropost.related_statement_id, current_user.name
       @event = data["statements"]
       @seedurl = data["seedurl"]
       @website = Website.where(url: @seedurl, user_id: current_user).first
       @subject_uri = data["uri"]
 
-      @microposts_all_statements = { @subject_uri => helpers.get_event_microposts(@event, @subject_uri) }
+      @microposts_all_statements = build_microposts(@event, @subject_uri) 
 
       key = helpers.make_key(@micropost.related_statement_property,@micropost.related_statement_language )
 
@@ -59,7 +65,14 @@ class MicropostsController < ApplicationController
         headers: { 'Content-Type' => 'application/json' }
       )
 
-      render partial: "events/render_statement", locals: {stat: @event[key] }
+      respond_to do |format|
+        format.html { redirect_back fallback_location: root_path }
+
+        format.js do
+          render partial: "events/render_statement",
+                locals: { stat: @event[key] }
+        end
+      end
     else
       flash[:danger] = "Could not save."
       redirect_back(fallback_location: root_path)

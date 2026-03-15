@@ -12,7 +12,7 @@ class ResourceController < ApplicationController
               end
 
     if format == :jsonld || params[:format] == 'jsonld'
-      redirect_to "#{helpers.condenser_url_per_environment}/graphs/webpage/event-artsdata.jsonld?rdf_uri=footlight:#{params[:id]}", status: 303
+      redirect_to "#{Condenser::API.url_per_environment}/graphs/webpage/event-artsdata.jsonld?rdf_uri=footlight:#{params[:id]}", status: 303
     else
       redirect_to resource_index_path(uri: "footlight:" + params[:id]), status: 303
     end
@@ -46,25 +46,25 @@ class ResourceController < ApplicationController
       @links = safe_search_statements(@subject_uri)
       render 'show'
     else
-      seed = params[:seedurl] || cookies[:seedurl]
-      @resources = safe_website_resources(seed)
+      seedurl = params[:seedurl] || cookies[:seedurl]
+      @resources = safe_website_resources(seedurl: seedurl)
     end
   end
 
   # POST /resource/refresh)uri_uri=
   def refresh_uri
-    helpers.condenser_refresh_rdf_uri_statements(params[:uri])
+    Condenser::API.refresh_rdf_uri_statements(params[:uri])
     redirect_to resource_index_path(uri: params[:uri])
   end
 
   def delete_uri
-    helpers.condenser_delete_resource(CGI.unescape(params[:id]))
+    Condenser::API.delete_resource(CGI.unescape(params[:id]))
     flash[:success] = "Resource deleted. Attention: events may still be linked to this resource. Please delete individual links manually."
     redirect_to resource_index_url
   end
 
   def destroy
-    helpers.condenser_delete_resource(params[:id])
+    Condenser::API.delete_resource(params[:id])
     flash[:success] = "Resource deleted. Attention: events may still be linked to this resource. Please delete individual links manually."
     redirect_to resource_index_url
   end

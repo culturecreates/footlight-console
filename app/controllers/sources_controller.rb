@@ -6,16 +6,20 @@ class SourcesController < ApplicationController
 
   def index
     cookies[:seedurl] = params[:seedurl] if params[:seedurl].present?
-    @sources = helpers.condenser_get_sources(cookies[:seedurl])
-    @sources.select! {|source| 
-     (source["domain"] == "Event" || 
-      source["domain"] == "WebPage" || 
-      source["domain"] == "Offer"  || 
-      source["domain"] == "AggregateOffer"  || 
-      source["domain"] == "ContactPoint"  || 
-      source["domain"] == "VirtualLocation") &&  
-      source["selected"]}
-      
+    @sources = Condenser::API.sources(seedurl: cookies[:seedurl])
+
+    allowed_domains = %w[
+      Event
+      WebPage
+      Offer
+      AggregateOffer
+      ContactPoint
+      VirtualLocation
+    ]
+
+    @sources.select! do |source|
+      allowed_domains.include?(source["domain"]) && source["selected"]
+    end
   end
 
   # Call safe_property_statements seedurl, property, startDate = nil, endDate = nil
@@ -27,9 +31,16 @@ class SourcesController < ApplicationController
 
     raw =
       if cookies[:timeline] == "all"
-        safe_property_statements(@seedurl, @property_id, OLDEST_DATE)
+        safe_property_statements(
+          seedurl: @seedurl,
+          property_id: @property_id,
+          start_date: OLDEST_DATE
+        )
       else
-        safe_property_statements(@seedurl, @property_id)
+        safe_property_statements(
+          seedurl: @seedurl,
+          property_id: @property_id
+        )
       end
 
     # 🔴 HARD STOP if property does not exist
@@ -46,7 +57,7 @@ class SourcesController < ApplicationController
     @property_labels = @statements["property_labels"] ||= []
     @property_ids = @statements["property_ids"] ||= []
     @events = @statements["events"] ||= []
-    @events = @events.sort_by do |_, v|
+    @events = (@events || {}).sort_by do |_, v|
       v.dig("archive_date", "archive_date") || Date.new(1900)
     end
 
@@ -81,7 +92,7 @@ class SourcesController < ApplicationController
   # Review all statements by property (can include en and fr sources)
   # PATCH /sources/1?seedurl=
   def update
-    data = helpers.condenser_review_all_statements_by_property params[:id], current_user.name, params[:seedurl]
+    data = Condenser::API.review_all_statements_by_property params[:id], current_user.name, params[:seedurl]
     if data[:error]
       flash[:danger] = "Failed to review all! #{CGI.escape(data.to_s)}"
     else
