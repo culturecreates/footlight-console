@@ -1,84 +1,126 @@
+# app/controllers/concerns/condenser_safe.rb
+#
+# Safe wrappers around Condenser API calls.
+#
+# Responsibilities:
+#   • Normalize parameters
+#   • Provide safe defaults
+#   • Catch and log API errors
+#
+# IMPORTANT
+#   All methods use keyword arguments.
+#   Controllers should never call Condenser::API directly.
+
 module CondenserSafe
   extend ActiveSupport::Concern
-  require 'timeout'
 
-  def safe_condenser_call(default:, timeout: 5, &block)
-    Timeout.timeout(timeout) do
-      result = block.call
-      return default if result.nil?
-      result
-    end
-  rescue Timeout::Error => e
-    Rails.logger.error "[Condenser TIMEOUT] #{e.message}"
-    default
+  private
+
+  # ------------------------------------------------------------
+  # Normalize parameters
+  #
+  # Ensures consistent types and removes nil values.
+  # ------------------------------------------------------------
+  def normalize_params(**params)
+    normalized = params.compact
+
+    normalized[:property_id] = normalized[:property_id].to_i if normalized[:property_id]
+
+    normalized
+  end
+
+  # ------------------------------------------------------------
+  # Core safety wrapper
+  # ------------------------------------------------------------
+  def safe_condenser(default:, action:)
+    result = yield
+    result.nil? ? default : result
   rescue StandardError => e
-    Rails.logger.error "[Condenser ERROR] #{e.class}: #{e.message}"
+    AppLogger.error("Condenser #{action}", e)
     default
   end
 
-  def safe_events(seedurl, start_date = nil)
-    result = safe_condenser_call(default: { "events" => [] }) do
-      helpers.condenser_get_website_events(seedurl, start_date)
-    end
 
-    result["events"] = Array(result["events"])
-    result
-  end
+  # ============================================================
+  # EVENTS
+  # ============================================================
 
-  def safe_property_statements(seed, property_id, start_date = nil)
-    safe_condenser_call(default: {
-      "property_labels" => [],
-      "property_ids"    => [],
-      "events"          => {}
-    }) do
-      helpers.condenser_get_property_statements(seed, property_id, start_date)
+  def safe_events(seedurl:, start_date: nil)
+    params = normalize_params(seedurl: seedurl, start_date: start_date)
+
+    safe_condenser(default: { "events" => [] }, action: "events #{seedurl}") do
+      Condenser::API.website_events(**params)
+    end.tap do |result|
+      result["events"] = Array(result["events"])
     end
   end
 
-  def safe_website_resources(seed)
-    result = safe_condenser_call(default: {}) do
-      helpers.condenser_get_website_resources(seed)
-    end
 
-    result ||= {}
-    result["resources_by_class"] ||= {}
+  # ============================================================
+  # PROPERTY STATEMENTS
+  # ============================================================
 
-    result
-  end
+  def safe_property_statements(seedurl:, property_id:, start_date: nil)
+    params = normalize_params(
+      seedurl: seedurl,
+      property_id: property_id,
+      start_date: start_date
+    )
 
-  def safe_resource(uri)
-    safe_condenser_call(default: {}) do
-      helpers.condenser_get_resource(uri)
-    end
-  end
-
-  def safe_search_statements(uri)
-    safe_condenser_call(default: []) do
-      helpers.condenser_search_statements(uri)
+    safe_condenser(
+      default: { "property_labels" => [], "property_ids" => [], "events" => {} },
+      action: "property #{seedurl}/#{property_id}"
+    ) do
+      Condenser::API.property_statements(**params)
     end
   end
 
-  def safe_mutation(&block)
-    safe_condenser_call(default: nil, &block)
-  end
 
-  def call_condenser(action:, default: nil, &block)
-    safe_condenser_call(default: default) do
-      Rails.logger.info "[Condenser CALL] #{action}"
-      block.call
+  # ============================================================
+  # WEBSITE RESOURCES
+  # ============================================================
+
+  def safe_website_resources(seedurl:)
+    params = normalize_params(seedurl: seedurl)
+
+    safe_condenser(default: {}, action: "resources #{seedurl}") do
+      Condenser::API.website_resources(**params)
+    end.tap do |result|
+      result["resources_by_class"] ||= {}
     end
   end
 
-  def process_mutation(action_name)
-    data = yield
 
-    unless data.is_a?(Hash)
-      flash[:danger] = "Could not #{action_name}."
-      redirect_back(fallback_location: root_path)
-      return nil
+  # ============================================================
+  # SINGLE RESOURCE (EVENT PAGE)
+  # ============================================================
+
+  def safe_resource(id:)
+    safe_condenser(default: {}, action: "resource #{id}") do
+      Condenser::API.resource(id: id)
     end
-
-    data
   end
-  
+
+
+  # ============================================================
+  # SEARCH STATEMENTS
+  # ============================================================
+
+  def safe_search_statements(uri:)
+    safe_condenser(default: [], action: "search #{uri}") do
+      Condenser::API.search_statements(uri: uri)
+    end
+  end
+
+
+  # ============================================================
+  # GENERIC MUTATION
+  # ============================================================
+
+  def safe_mutation(action:)
+    safe_condenser(default: nil, action: action) do
+      yield
+    end
+  end
+
 end
