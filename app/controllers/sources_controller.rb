@@ -92,7 +92,12 @@ class SourcesController < ApplicationController
   # Review all statements by property (can include en and fr sources)
   # PATCH /sources/1?seedurl=
   def update
-    data = Condenser::API.review_all_statements_by_property params[:id], current_user.name, params[:seedurl]
+    data = Condenser::API.review_all_statements_by_property(
+      property_id: params[:id],
+      user_name: current_user.name,
+      seedurl: params[:seedurl]
+    )
+
     if data[:error]
       flash[:danger] = "Failed to review all! #{CGI.escape(data.to_s)}"
     else

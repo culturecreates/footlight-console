@@ -44,7 +44,11 @@ class MicropostsController < ApplicationController
     @micropost = current_user.microposts.build(micropost_params)
     if @micropost.save
       ##FLAG work goes here
-      data = Condenser::API.flag_statement @micropost.related_statement_id, current_user.name
+      data = Condenser::API.flag_statement(
+        id: @micropost.related_statement_id,
+        user_name: current_user.name
+      )
+
       @event = data["statements"]
       @seedurl = data["seedurl"]
       @website = Website.where(url: @seedurl, user_id: current_user).first

@@ -141,7 +141,11 @@ class StatementsController < ApplicationController
     @old_statement_id = params[:old_statement_id]
 
     data = call_condenser(action: :save_manual_statement) do
-      condenser_service.condenser_save_individual_statement(id, value, current_user.name)
+      Condenser::API.save_individual_statement(
+        id: id,
+        value: value,
+        user_name: current_user.name
+      )
     end
 
     return unless validate_statement_response(data, "save statement")
@@ -215,7 +219,7 @@ class StatementsController < ApplicationController
     return nil if id == old_id
 
     data = call_condenser(action: :activate_statement) do
-      condenser_service.condenser_activate_statement(id)
+      Condenser::API.activate_statement(id: id)
     end
 
     return nil unless validate_statement_response(data, "activate statement")
