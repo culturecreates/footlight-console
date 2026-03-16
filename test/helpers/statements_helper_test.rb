@@ -75,23 +75,23 @@ class StatementsHelperTest < ActionView::TestCase
     assert_equal expected, actual
   end
 
-  test "get_top_statment_to_display regular" do
+  test "get_top_statement_to_display regular" do
     stats = JSON.parse(File.read("test/fixtures/files/chaakapesh_resource.json"))["statements"]
-    actual = get_top_statment_to_display(stats, 84138)
+    actual = get_top_statement_to_display(stats, 84138)
     expected = stats["webpage_link_fr"]
     assert_equal expected, actual
   end
 
-  test "get_top_statment_to_display alternatives" do
+  test "get_top_statement_to_display alternatives" do
     stats = JSON.parse(File.read("test/fixtures/files/chaakapesh_resource.json"))["statements"]
-    actual = get_top_statment_to_display(stats, 84129)
+    actual = get_top_statement_to_display(stats, 84129)
     expected = stats["title_fr"]
     assert_equal expected, actual
   end
 
-  test "get_top_statment_to_display second alternatives" do
+  test "get_top_statement_to_display second alternatives" do
     stats = JSON.parse(File.read("test/fixtures/files/chaakapesh_resource.json"))["statements"]
-    actual = get_top_statment_to_display(stats, 84130)
+    actual = get_top_statement_to_display(stats, 84130)
     expected = stats["title_fr"]
     assert_equal expected, actual
   end

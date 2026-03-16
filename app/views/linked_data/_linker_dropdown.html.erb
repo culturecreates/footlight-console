@@ -14,7 +14,7 @@
       <div class="dropdown-content">
         <% @link_auto_complete.each do |l| %>
           <%= link_to l[:label],
-                      linked_data_add_linked_data_path(key: @key, statement_id: @statement_id, name: l[:label] , rdfs_class: @expected_class,  uri: l[:value]),
+                      add_linked_data_path(key: @key, statement_id: @statement_id, name: l[:label] , rdfs_class: @expected_class,  uri: l[:value]),
                       method: :patch,
                       remote: true,
                       class: "dropdown-item"  %>

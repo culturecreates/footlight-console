@@ -1,62 +1,69 @@
 
 <% lang = 'en' %>
 <h1 class="title">
-<% if @resource["statements"]["name_#{lang}"] %>
-  <%= display_statement(@resource["statements"]["name_#{lang}"]['value']) %>
-<% elsif @resource["statements"]["name_fr"].present? %>
-  <%= display_statement(@resource["statements"]["name_fr"]['value']) %> 
-<% elsif @resource["statements"]["name"].present? %>
-  <%= display_statement(@resource["statements"]["name"]['value']) %> 
-<% end %>
-<% if @resource["statements"]["title_fr"].present? %>
-  <%= display_statement(@resource["statements"]["title_fr"]['value']) %> 
-<% elsif @resource["statements"]["title_en"].present? %>
-  <%= display_statement(@resource["statements"]["title_en"]['value']) %> 
-<% elsif @resource["statements"]["title"].present? %>
-  <%= display_statement(@resource["statements"]["title"]['value']) %> 
-<% end %>
-<p>
-<% if @resource["uri"].starts_with?("footlight:") %>
-    <h2 class="subtitle is-size-6 has-text-grey"><%= @resource["uri"] %></h2>
-  <% elsif @resource["uri"].starts_with?("adr:")   %>
-    <a class="is-size-5" href="<%= @resource["uri"].gsub("adr:","http://kg.artsdata.ca/resource/") %>"> <%= @resource["uri"] %></a>
-  <% else %>
-    <a class="is-size-5" href="<%= @resource["uri"] %>"> <%= @resource["uri"] %></a>
+
+  <% if @statements.blank? %>
+    <div class="notification is-warning">
+      No structured statements found for this resource in Condenser.
+    </div>
   <% end %>
-</p>
+
+  <% if @statements["name_#{lang}"] %>
+    <%= display_statement(@statements["name_#{lang}"]['value']) %>
+  <% elsif @statements["name_fr"].present? %>
+    <%= display_statement(@statements["name_fr"]['value']) %>
+  <% elsif @statements["name"].present? %>
+    <%= display_statement(@statements["name"]['value']) %>
+  <% end %>
+
+  <% if @statements["title_fr"].present? %>
+    <%= display_statement(@statements["title_fr"]['value']) %>
+  <% elsif @statements["title_en"].present? %>
+    <%= display_statement(@statements["title_en"]['value']) %>
+  <% elsif @statements["title"].present? %>
+    <%= display_statement(@statements["title"]['value']) %>
+  <% end %>
+
+    <% if @resource["uri"].starts_with?("footlight:") %>
+      <h2 class="subtitle is-size-6 has-text-grey"><%= @resource["uri"] %></h2>
+    <% elsif @resource["uri"].starts_with?("adr:") %>
+      <a class="is-size-5" href="<%= @resource["uri"].gsub("adr:","http://kg.artsdata.ca/resource/") %>">
+        <%= @resource["uri"] %>
+      </a>
+    <% else %>
+      <a class="is-size-5" href="<%= @resource["uri"] %>">
+        <%= @resource["uri"] %>
+      </a>
+    <% end %>
+
 </h1>
- 
-<% @resource["statements"].sort.each do |key,stat| %>
-<div class="columns">
-  <div class="column statement">
-    <%= render partial: 'statement', locals: {stat: stat} %>
+
+<% @statements.sort.each do |key, stat| %>
+  <div class="columns">
+    <div class="column statement">
+      <%= render partial: 'statement', locals: { stat: stat } %>
+    </div>
   </div>
-</div> 
 <% end %>
 
 <p>
 
-
-<% if @resource["statements"].empty? %>
-<h1 class="title"> External resource </h1>
- 
-<% elsif %>
+<% if @statements.empty? %>
+  <h1 class="title">External resource</h1>
+<% else %>
 
   <%= link_to "Delete",
-                  delete_uri_resource_index_path(id: @resource["uri"]),
-                  method: :delete,
-                  remote: true,
-                  class: "button is-danger",
-                  title: "Delete",
-                 data: { confirm: 'Are you sure? This will permanently delete.' } %>
+        delete_uri_resource_index_path(id: @resource["uri"]),
+        method: :delete,
+        remote: true,
+        class: "button is-danger",
+        data: { confirm: 'Are you sure? This will permanently delete.' } %>
 
-  <%= link_to "Load Template", 
-                refresh_uri_resource_index_path(uri:  @resource["uri"]),
-                 method: :patch,
-                class: "button is-info",
-                  title: "Load Template",
-                 data: { confirm: 'This will add all properties from the template. Are you sure?' } %>
-                
+  <%= link_to "Load Template",
+        refresh_uri_resource_index_path(uri: @resource["uri"]),
+        method: :patch,
+        class: "button is-info",
+        data: { confirm: 'This will add all properties from the template. Are you sure?' } %>
 
 <% end %>
 </p>
@@ -64,15 +71,24 @@
 
 <p class="is-size-3">Used in</p>
 <br>
-<% @links.each do |stat| %>
-
-<div class="columns">
-  <div class="column statement">
-  <%= stat["label"] %> for <a href="/resource?uri=<%= stat["event_rdf_uri"] %>"><%= stat["event_rdf_uri"] %></a>   
-  last updated <%= DateTime.parse(stat["updated_at"]).to_formatted_s(:rfc822) %> 
+<% if @links.present? %>
+  <% @links.each do |stat| %>
+    <div class="columns">
+      <div class="column statement">
+        <%= stat["label"] %>
+        for
+        <a href="/resource?uri=<%= stat["event_rdf_uri"] %>">
+          <%= stat["event_rdf_uri"] %>
+        </a>
+        last updated
+        <%= DateTime.parse(stat["updated_at"]).to_formatted_s(:rfc822) %>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="notification is-light">
+    No linked resources found.
   </div>
-  
-</div>
 <% end %>
 
 <br>

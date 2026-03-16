@@ -26,7 +26,7 @@
       <% end %>
       <!-- Add link button -->
       <% if stat["datatype"] == "xsd:anyURI" %>
-        <%= link_to "Add", linked_data_linker_path(expected_class: stat["expected_class"].split(',')[0], statement_id: stat["id"]), remote: true, class: "button" %>
+        <%= link_to "Add", linker_path(expected_class: stat["expected_class"].split(',')[0], statement_id: stat["id"]), remote: true, class: "button" %>
       <% end %>
       <!-- Flag button -->
       <%= link_to new_micropost_path(statement_id: stat["id"], key: make_key(stat['label'], stat['language']), subject_uri: stat['subject']), remote: true, class: 'button is-danger' do %>

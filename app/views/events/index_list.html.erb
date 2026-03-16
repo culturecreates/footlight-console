@@ -1,12 +1,7 @@
 <% provide(:title, "#{cookies[:seedurl]} - List events") %>
 <section class="container">
-
-    <center>
         <h1 class="title"><%= @event_count %> <%= "Upcoming " if cookies[:timeline] != "all" %> Events </h1>
-    </center>
-
     <br>
-   
     <%= render 'event_stats' %>
 </section>
  
@@ -42,7 +37,7 @@
             <tr id=<%=event["rdf_uri"].split(":")[1]%> <%=  "class=is-selected" if event["archive_date"].to_date <= Date.today %>>
                
                 <td>
-                  <a href="<%= '/events/' + escape_uri(event["rdf_uri"]) %>">   <%= sanitize(truncate(event["title"], length: 200)) %>  </a>
+                  <a href="<%= '/events/' + escape_uri(event["rdf_uri"]) %>">   <%= truncate(display_statement(event["title"]), length: 200) %>  </a>
                   <p class="is-size-7 has-text-grey"> <%= event['rdf_uri'].split("_")[1] %> </p>
                 </td>
 
@@ -55,7 +50,7 @@
                 </td>    
                 <td>
                  <%= link_to "",
-                  destroy_event_path(event_id: event["rdf_uri"]),
+                  event_path(event["rdf_uri"]),
                   method: :delete,
                   remote: true,
                   class: "tag is-delete is-dark",

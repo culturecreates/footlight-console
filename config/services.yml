@@ -1,0 +1,15 @@
+default: &default
+  condenser:
+    url: <%= ENV.fetch("CONDENSER_URL", "http://localhost:3000") %>
+
+  wringer:
+    url: <%= ENV.fetch("WRINGER_URL", "http://localhost:3009") %>
+
+development:
+  <<: *default
+
+staging:
+  <<: *default
+
+production:
+  <<: *default

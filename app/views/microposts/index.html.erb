@@ -1,26 +1,35 @@
-
 <section>
   <div class="container">
 
+    <% timeline = cookies[:timeline] || "upcoming" %>
+
     <% if @microposts.any? %>
-        <h1 class="title">
-          <%= "#{@microposts.count} Comments".pluralize(@microposts.count) %> for upcoming events
-        </h1>
-        <h2 class="subtitle">
-         <%= @seedurl %>
-        </h2>
-          <ol class="microposts">
-            <%= render 'microposts/micropost_details', microposts: @microposts %>
-          </ol>
+
+      <h1 class="title">
+        <%= pluralize(@microposts.count, "Comment") %>
+        for <%= timeline == "upcoming" ? "upcoming events" : "past events" %>
+      </h1>
+
+      <h2 class="subtitle">
+        <%= @seedurl %>
+      </h2>
+
+      <ol class="microposts">
+        <%= render 'microposts/micropost_details', microposts: @microposts %>
+      </ol>
+
     <% else %>
-    <center>
+
+      <div class="has-text-centered">
         <h1 class="title">
-            No comments on upcoming events
+          No comments for <%= timeline == "upcoming" ? "upcoming events" : "past events" %>
         </h1>
-         <h2 class="subtitle">
-            To find comments on past events please use the Event list filtered with "All dates"
+
+        <h2 class="subtitle">
+          <%= @seedurl %>
         </h2>
-        </center>
+      </div>
+
     <% end %>
 
   </div>

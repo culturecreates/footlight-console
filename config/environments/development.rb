@@ -42,7 +42,7 @@ Rails.application.configure do
   config.active_record.migration_error = :page_load
 
   # Highlight code that triggered database queries in logs.
-  config.active_record.verbose_query_logs = true
+  config.active_record.verbose_query_logs = false
 
   # Debug mode disables concatenation and preprocessing of assets.
   # This option may cause significant delays in view rendering with a large
@@ -52,10 +52,26 @@ Rails.application.configure do
   # Suppress logger output for asset requests.
   config.assets.quiet = true
 
+  # Use the log level to ensure availability of diagnostic information
+  # when problems arise.
+  config.log_level = :debug
+  config.active_record.logger = nil
+
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
 
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
+
+  # lograge: helps use automated log analysis tools 
+  config.lograge.enabled = false
+  config.lograge.formatter = Lograge::Formatters::Json.new
+
+  config.lograge.custom_options = lambda do |event|
+    {
+      request_id: event.payload[:request_id],
+      params: event.payload[:params]&.except("controller", "action")
+    }
+  end
 end

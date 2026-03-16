@@ -2,8 +2,8 @@
 class CondenserStatusService
   CACHE_TTL = 30.seconds
 
-  def initialize(helpers)
-    @helpers = helpers
+  def initialize(client = Condenser::API)
+    @client = client
   end
 
   def websites
@@ -25,18 +25,18 @@ class CondenserStatusService
   private
 
   def fetch_websites
-    result = @helpers.condenser_get_websites
+    result = @client.websites
     return result if result.is_a?(Array)
 
     Rails.logger.warn("Condenser returned invalid websites payload")
     []
   rescue StandardError => e
-    Rails.logger.warn("Condenser websites fetch failed: #{e.message}")
+    AppLogger.error("CondenserStatusService websites", e)
     []
   end
 
   def fetch_metrics
-    result = @helpers.get_dashboard_metrics
+    result = @client.dashboard_metrics
     return result if result.is_a?(Hash)
 
     Rails.logger.warn("Condenser returned invalid metrics payload")

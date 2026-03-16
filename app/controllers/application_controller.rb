@@ -10,6 +10,11 @@ class ApplicationController < ActionController::Base
 
   private
 
+  def append_info_to_payload(payload)
+    super
+    payload[:user_id] = current_user&.id
+  end
+
   def set_event_timezone
     if !cookies[:event_timezone]
       if cookies[:seedurl] && logged_in?
@@ -49,6 +54,14 @@ class ApplicationController < ActionController::Base
     end
 
     true
+  end
+
+  def build_microposts(event, uri)
+    { uri => helpers.get_event_microposts(event, uri) }
+  end
+
+  def route_not_found
+    raise ActionController::RoutingError, "Route not found"
   end
 
 end

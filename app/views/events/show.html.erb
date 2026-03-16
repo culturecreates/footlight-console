@@ -15,12 +15,12 @@
   <% end %>
 <% end %>
 
-<center>
+<div class="has-text-centered">
   <br>
-    <%= link_to "Review Event", review_all_event_path(event_id: params[:id], review_next: "false", seedurl: @seedurl), method: :patch, class: "button use-loading is-primary is-large review-complete-event-button" %>
-    <%= link_to "Review and next", review_all_event_path(event_id: params[:id], review_next: "true", seedurl: @seedurl), method: :patch, class: "button  use-loading is-large review-complete-event-button" %>
+    <%= link_to "Review Event", review_event_event_path(event_id: params[:id], review_next: "false", seedurl: @seedurl), method: :patch, class: "button use-loading is-primary is-large review-complete-event-button" %>
+    <%= link_to "Review and next", review_event_event_path(event_id: params[:id], review_next: "true", seedurl: @seedurl), method: :patch, class: "button  use-loading is-large review-complete-event-button" %>
   <br>
   <br>
-</center>
+</div>
 
  <%= render partial: "admin_tools", locals: {subject_uri: @subject_uri, seedurl: @seedurl, webpage_url: @webpage_url, webpage_url_fr: @webpage_url_fr} %>

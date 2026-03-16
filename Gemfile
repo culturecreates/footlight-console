@@ -15,6 +15,7 @@ gem 'jquery-rails'
 gem 'turbolinks'
 gem 'jquery-turbolinks'
 gem 'jbuilder'
+gem "lograge"
 
 group :development, :test do
   gem 'sqlite3', '~> 1.4'
@@ -36,6 +37,7 @@ group :test do
   gem 'minitest-reporters'
   gem 'guard'
   gem 'guard-minitest'
+  gem "webmock"
 end
 
 group :production do
