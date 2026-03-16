@@ -26,10 +26,13 @@ class LinkedDataController < ApplicationController
         params[:uri].split('---').second # passed by select2 autocomplete
       end
 
-    data = Condenser::API.add_linked_data  params[:statement_id], current_user.name,
-               {rdfs_class: params[:rdfs_class],
-                uri: uri,
-                name: name}
+    data = Condenser::API.add_linked_data(
+      id: params[:statement_id],
+      user_name: current_user.name,
+      rdfs_class: params[:rdfs_class],
+      uri: uri,
+      name: name
+    )
    
     @event = data["statements"]
     stat = @event.select{ |_n,v| v["id"] == params[:statement_id].to_i }.flatten[1]
@@ -57,10 +60,14 @@ class LinkedDataController < ApplicationController
     params[:name]
     params[:statement_id]
  
-    data = Condenser::API.remove_linked_data params[:statement_id], current_user.name,
-               {rdfs_class: params[:rdfs_class],
-                uri: params[:uri],
-                name: params[:name]}
+    data = Condenser::API.remove_linked_data(
+      id: params[:statement_id],
+      user_name: current_user.name,
+      rdfs_class: params[:rdfs_class],
+      uri: params[:uri],
+      name: params[:name]
+    )
+
     @event = data["statements"]
     stat = @event.select{ |_n,v| v["id"] == params[:statement_id].to_i }.flatten[1]
 
@@ -143,18 +150,23 @@ class LinkedDataController < ApplicationController
     end
 
     # call condenser condenser_create_linked_resource 
-    new_entity = Condenser::API.create_linked_resource params[:rdfs_class], params[:seedurl], options
+    new_entity = Condenser::API.create_linked_resource(
+      rdfs_class: params[:rdfs_class],
+      seedurl: params[:seedurl],
+      statements: options
+    )
    
     puts "new_entity: #{new_entity.inspect}"
 
     # Link to new resource and returns the event 
     if new_entity["statements"].present?
-      data = Condenser::API.add_linked_data params[:statement_id], current_user.name, 
-        { 
-          rdfs_class: params[:rdfs_class],
-          uri: new_entity["uri"],
-          name: new_entity["statements"]["name_#{params[:name_lang]}"]["value"]
-        }
+    data = Condenser::API.add_linked_data(
+      id: params[:statement_id],
+      user_name: current_user.name,
+      rdfs_class: params[:rdfs_class],
+      uri: new_entity["uri"],
+      name: new_entity["statements"]["name_#{params[:name_lang]}"]["value"]
+    )
       
       @event = data["statements"]
       stat = @event.select{ |_n,v| v["id"] == params[:statement_id].to_i }.flatten[1]

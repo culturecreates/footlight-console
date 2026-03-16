@@ -12,7 +12,7 @@ class ResourceController < ApplicationController
               end
 
     if format == :jsonld || params[:format] == 'jsonld'
-      redirect_to "#{Condenser::API.url_per_environment}/graphs/webpage/event-artsdata.jsonld?rdf_uri=footlight:#{params[:id]}", status: 303
+      redirect_to "#{Condenser::API.base_url}/graphs/webpage/event-artsdata.jsonld?rdf_uri=footlight:#{params[:id]}", status: 303
     else
       redirect_to resource_index_path(uri: "footlight:" + params[:id]), status: 303
     end
@@ -22,7 +22,7 @@ class ResourceController < ApplicationController
   # GET /resource 
   def index 
     if params[:uri] 
-      @resource = safe_resource(params[:uri])
+      @resource = safe_resource(id: params[:uri])
 
       unless @resource["uri"].present?
         flash[:danger] = "Could not load resource."
@@ -51,20 +51,28 @@ class ResourceController < ApplicationController
     end
   end
 
-  # POST /resource/refresh)uri_uri=
+  # POST /resource/refresh_uri?uri=
   def refresh_uri
-    Condenser::API.refresh_rdf_uri_statements(params[:uri])
-    redirect_to resource_index_path(uri: params[:uri])
+    uri = params[:uri]
+
+    unless uri.present?
+      flash[:danger] = "Missing resource URI."
+      redirect_to resource_index_path and return
+    end
+
+    Condenser::API.refresh_rdf_uri_statements(rdf_uri: uri)
+
+    redirect_to resource_index_path(uri: uri)
   end
 
   def delete_uri
-    Condenser::API.delete_resource(CGI.unescape(params[:id]))
+    Condenser::API.delete_resource_uri(uri: CGI.unescape(params[:id]))
     flash[:success] = "Resource deleted. Attention: events may still be linked to this resource. Please delete individual links manually."
     redirect_to resource_index_url
   end
 
   def destroy
-    Condenser::API.delete_resource(params[:id])
+    Condenser::API.delete_resource_uri(uri: params[:id])
     flash[:success] = "Resource deleted. Attention: events may still be linked to this resource. Please delete individual links manually."
     redirect_to resource_index_url
   end

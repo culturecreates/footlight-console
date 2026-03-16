@@ -202,7 +202,13 @@ class EventsController < ApplicationController
   end
 
   def review_event
-    data = Condenser::API.review_all_statements params[:event_id], current_user.name, params[:review_next], params[:seedurl]
+    data = Condenser::API.review_all_statements(
+      event_id: params[:event_id],
+      user_name: current_user.name,
+      review_next: params[:review_next],
+      seedurl: params[:seedurl]
+    )
+
     if data.blank?
       flash[:danger] = "Failed to update!"
       redirect_back(fallback_location: root_path)
@@ -224,7 +230,7 @@ class EventsController < ApplicationController
 
   def destroy
     #add call to condenser to destroy
-    data = Condenser::API.delete_resource params[:event_id]
+    data = Condenser::API.delete_resource_uri(uri: params[:event_id])
 
     if data[:error] then
       flash[:danger] = "Failed to unlink event."

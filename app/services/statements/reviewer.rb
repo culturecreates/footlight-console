@@ -2,7 +2,7 @@
 module Statements
   class Reviewer
     def self.call(statement_id:, user_name:)
-      data = ApplicationController.Condenser::API.review_statement(statement_id, user_name)
+      data = Condenser::API.review_statement(id: statement_id, user_name: user_name)
 
       return Statements::Result.new(error: data) unless valid_response?(data)
 

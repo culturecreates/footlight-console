@@ -9,7 +9,7 @@
 #
 # IMPORTANT
 #   All methods use keyword arguments.
-#   Controllers should never call Condenser::API directly.
+#   Controllers should prefer safe wrappers when available.
 
 module CondenserSafe
   extend ActiveSupport::Concern
@@ -97,7 +97,7 @@ module CondenserSafe
 
   def safe_resource(id:)
     safe_condenser(default: {}, action: "resource #{id}") do
-      Condenser::API.resource(id: id)
+      Condenser::API.resource(uri: id)
     end
   end
 
@@ -108,7 +108,7 @@ module CondenserSafe
 
   def safe_search_statements(uri:)
     safe_condenser(default: [], action: "search #{uri}") do
-      Condenser::API.search_statements(uri: uri)
+      Condenser::API.search_statements(cache: uri)
     end
   end
 
