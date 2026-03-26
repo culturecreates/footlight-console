@@ -1,0 +1,41 @@
+rules:
+  - name: event_has_problem
+    position: 1
+    conditions:
+      metric: has_problem
+      operator: eq
+      value: true
+    status: critical
+    diagnosis: Event has statement problems
+  - name: event_needs_review
+    position: 2
+    conditions:
+      metric: needs_review
+      operator: eq
+      value: true
+    status: warning
+    diagnosis: Event needs statement review
+  - name: event_not_publishable
+    position: 3
+    conditions:
+      metric: publishable
+      operator: eq
+      value: false
+    status: warning
+    diagnosis: Event is not publishable
+  - name: event_outdated
+    position: 4
+    conditions:
+      metric: days_until_archive
+      operator: lt
+      value: 0
+    status: warning
+    diagnosis: Event is outdated (archive date passed)
+  - name: event_stale
+    position: 5
+    conditions:
+      metric: recently_updated
+      operator: eq
+      value: false
+    status: warning
+    diagnosis: Event has not been updated recently
