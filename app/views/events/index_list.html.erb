@@ -27,13 +27,14 @@
             <tr>
                 <th title="List of events grouped by webpage">Events <i class="fa fa-info-circle"></i></th>
                 <th>Status</th>
+                <th>Pipeline</th>
                  <th title="Date when structured data stops being automaticaly refreshed each day. Usually because event has passed. You can still update manually.">Daily refresh ends <i class="fa fa-info-circle"></i></th>
                  <th title="Remove webpage link to Footlight">Remove link <i class="fa fa-info-circle"></th>
             </tr>
         </thead>
         <tbody>
             <% @events.each do |event| %>
-           
+            <% pipeline_result = @pipeline_results[pipeline_key(event)] %>
             <tr id=<%=event["rdf_uri"].split(":")[1]%> <%=  "class=is-selected" if event["archive_date"].to_date <= Date.today %>>
                
                 <td>
@@ -43,6 +44,10 @@
 
                 <td>
                      <%= render 'status_icons', {event: event} %>
+                </td>
+
+                <td class="pipeline-cell">
+                  <%= render 'pipeline_badge', result: pipeline_result %>
                 </td>
 
                  <td>
@@ -64,5 +69,3 @@
 
         </tbody>
     </table>
-
-

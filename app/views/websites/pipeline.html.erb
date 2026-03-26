@@ -1,0 +1,38 @@
+<h1>Pipeline Status</h1>
+
+<% rows = Array(@rows) %>
+
+<% if rows.empty? %>
+  <p>No events found</p>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Event</th>
+      <th>Status</th>
+      <th>Diagnosis</th>
+    </tr>
+  </thead>
+
+<tbody>
+  <% rows.each do |row| %>
+    <% event = row[:event] %>
+    <% status = row[:status] || {} %>
+
+    <% event_id =
+      if event.respond_to?(:id)
+        event.id
+      elsif event.respond_to?(:[])
+        event[:id] || event["id"]
+      end
+    %>
+
+    <tr>
+      <td><%= event_id || "-" %></td>
+      <td><%= status[:status] %></td>
+      <td><%= status[:diagnosis] %></td>
+    </tr>
+  <% end %>
+</tbody>
+</table>

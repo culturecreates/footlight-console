@@ -56,32 +56,9 @@
 # =============================================================================
 class WebsitesController < ApplicationController
 
-  # ---------------------------------------------------------------------------
-  # Filters
-  # ---------------------------------------------------------------------------
-
-  # Ensures user authentication before performing actions that modify data.
-  before_action :logged_in_user, only: [:edit, :first_scrape, :create, :destroy]
-
-  # Loads the website belonging to the current user for relevant actions.
+  before_action :logged_in_user, only: [:edit, :first_scrape, :create, :destroy, :pipeline]
   before_action :set_website, only: [:show, :edit, :update, :destroy]
 
-
-  # ---------------------------------------------------------------------------
-  # Dashboard / Website List
-  # ---------------------------------------------------------------------------
-
-  # Displays the list of websites owned by the current user.
-  #
-  # For each website, dashboard metrics are computed via DashboardBuilder.
-  #
-  # DashboardBuilder collects:
-  #   - condenser statistics
-  #   - event health metrics
-  #   - anomaly detection results
-  #
-  # The resulting rows are sorted and rendered in the dashboard table.
-  #
   def index
     @websites = current_user.websites
 
@@ -94,21 +71,6 @@ class WebsitesController < ApplicationController
       ).build
   end
 
-
-  # ---------------------------------------------------------------------------
-  # Website Resource View
-  # ---------------------------------------------------------------------------
-
-  # Displays normalized resources belonging to a website.
-  #
-  # Data is fetched from Condenser via `safe_website_resources`.
-  #
-  # If no resources are available (e.g. scraping has not yet succeeded),
-  # the "closed_beta" page is rendered.
-  #
-  # The selected website seedurl is stored in a cookie so that other parts
-  # of the application can reference the currently active source.
-  #
   def show
     @data = safe_website_resources @website.url
 
@@ -119,37 +81,34 @@ class WebsitesController < ApplicationController
     end
   end
 
+  def pipeline
+    @website = current_user.websites.find(params[:id])
 
-  # ---------------------------------------------------------------------------
-  # Website Configuration
-  # ---------------------------------------------------------------------------
+    return head :not_found unless @website.monitorable?
 
-  # Displays the website configuration form.
-  #
-  # Configuration parameters influence event ingestion behaviour,
-  # including timezone normalization, iframe rendering options,
-  # and scoring weights for event quality metrics.
-  #
+    events_data = safe_events(
+      seedurl: @website.url,
+      start_date: EventsController::OLDEST_DATE
+    )
+    events = Array(events_data["events"])
+
+    @rows = PipelineBuilder.call(
+      events: events,
+      website: @website
+    )
+    @pipeline_data = @rows
+  rescue ActiveRecord::RecordNotFound
+    head :not_found
+  end
+
   def edit
   end
 
-
-  # Updates website configuration parameters.
-  #
-  # After updating:
-  #   • dashboard-related caches are invalidated
-  #   • user is redirected back to the dashboard
-  #
-  # Cache invalidation ensures that changes affecting event scoring
-  # are reflected immediately in dashboard metrics.
-  #
   def update
     if @website.update(website_params)
-
       cookies.delete :event_timezone
       flash[:success] = "Website settings updated."
 
-      # Clear cached condenser data
       Rails.cache.delete("condenser:dashboard_metrics")
       Rails.cache.delete("condenser:events:#{@website.url}")
       Rails.cache.delete("condenser:places:#{@website.url}")
@@ -160,35 +119,14 @@ class WebsitesController < ApplicationController
     end
   end
 
-
-  # ---------------------------------------------------------------------------
-  # Website Creation
-  # ---------------------------------------------------------------------------
-
-  # Displays initial scraping setup page.
-  #
-  # Used when onboarding a new website into the system.
-  #
   def first_scrape
     @website = Website.new
   end
 
-
-  # Displays closed-beta placeholder when resources are unavailable.
-  #
-  # This view explains that the website has not yet been successfully
-  # processed by the ingestion pipeline.
-  #
   def closed_beta
     @websites = current_user.websites
   end
 
-
-  # Creates a new website associated with the current user.
-  #
-  # After creation the user is redirected to the website page
-  # where scraping and ingestion status can be inspected.
-  #
   def create
     @website = current_user.websites.build(website_params)
 
@@ -200,15 +138,6 @@ class WebsitesController < ApplicationController
     end
   end
 
-
-  # ---------------------------------------------------------------------------
-  # Website Deletion
-  # ---------------------------------------------------------------------------
-
-  # Deletes a website owned by the current user.
-  #
-  # Associated cookies are cleared to avoid referencing removed sources.
-  #
   def destroy
     @website.destroy
     cookies.delete :seedurl
@@ -218,46 +147,36 @@ class WebsitesController < ApplicationController
     redirect_to request.referrer || root_url
   end
 
-
 private
 
-
-  # ---------------------------------------------------------------------------
-  # Utility Methods
-  # ---------------------------------------------------------------------------
-
-  # Finds the website belonging to the current user.
-  #
-  # Prevents users from accessing or modifying websites belonging
-  # to other accounts.
-  #
   def set_website
     @website = current_user.websites.find(params[:id])
   end
 
-
-  # Strong parameters for website configuration.
-  #
-  # Limits which fields may be modified through forms.
-  #
   def website_params
     params.require(:website).permit(
       :url,
-      :timezone,
+      :scrape,
       :iframe,
-      :image_ratio,
-      :far_future_years,
-      :old_past_years,
-
-      # Monitoring thresholds used by DashboardBuilder
-      :min_publishable_ratio,
-      :warning_days_since_last_webpage,
-      :critical_days_since_last_webpage,
-      :warning_event_horizon_days,
-      :critical_event_horizon_days,
-
-      weight_overrides: {}
+      :compress,
+      :strict,
+      :enabled,
+      :archived,
+      :theme,
+      :exclude_keywords,
+      :include_keywords,
+      :language,
+      :country,
+      :timezone,
+      :score_damage_problem,
+      :score_damage_not_publishable,
+      :score_damage_to_review,
+      :score_damage_stale,
+      :score_damage_overdue_archive,
+      :score_health_damage_weight,
+      :score_health_anomaly_weight,
+      :score_health_schedule_weight,
+      :monitorable
     )
   end
-
 end

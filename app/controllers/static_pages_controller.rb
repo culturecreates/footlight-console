@@ -22,6 +22,23 @@ class StaticPagesController < ApplicationController
         sort: sort,
         dir: dir
       ).build
+
+    @pipeline_statuses = {}
+
+    @websites.each do |website|
+      next unless website.monitorable?
+
+      events_data = safe_events(
+        seedurl: website.url,
+        start_date: EventsController::OLDEST_DATE
+      )
+      rows = PipelineBuilder.call(
+        events: Array(events_data["events"]),
+        website: website
+      )
+
+      @pipeline_statuses[website.id] = PipelineAggregateStatus.call(rows: rows)
+    end
   end
 
   def about

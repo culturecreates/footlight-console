@@ -1,0 +1,14 @@
+<% pipeline_status = result&.[](:status)&.to_sym %>
+<% label, classes =
+  case pipeline_status
+  when :ok
+    ["OK", "tag pipeline-badge is-success"]
+  when :warning
+    ["Warning", "tag pipeline-badge is-warning"]
+  when :error
+    ["Error", "tag pipeline-badge is-danger"]
+  else
+    ["N/A", "tag pipeline-badge is-light"]
+  end
+%>
+<%= content_tag(:span, label, class: classes, title: result&.[](:diagnosis)) %>

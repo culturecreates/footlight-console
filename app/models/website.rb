@@ -1,5 +1,7 @@
 class Website < ApplicationRecord
   belongs_to :user
+  has_many :pipeline_rules, dependent: :destroy
+
   validates :url, presence: true
   before_validation :normalize_url
 
@@ -53,13 +55,6 @@ class Website < ApplicationRecord
   private
 
   def normalize_url
-    return if url.blank?
-
-    cleaned = url.downcase.strip
-    cleaned = cleaned.gsub(%r{https?://}, "")
-    cleaned = cleaned.gsub("/", "")
-    cleaned = cleaned.gsub(".", "-")
-
-    self.url = cleaned
+    self.url = SourceIdentity.from_url(url).to_seedurl
   end
 end

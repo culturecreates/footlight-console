@@ -2,6 +2,7 @@ class EventsController < ApplicationController
   require 'will_paginate/array'
   require 'set'
   before_action :logged_in_user, only: [:review_event, :destroy]
+  helper_method :pipeline_key
 
   # ==========================================
   # CONSTANTS
@@ -47,13 +48,12 @@ class EventsController < ApplicationController
     cookies[:seedurl]  = params[:seedurl]  if params[:seedurl].present?
     cookies[:filter]   = params[:filter]   if params[:filter].present?
 
-    # Store image_ratio for website if seedurl is present
-    if cookies[:seedurl].present?
-      cookies[:image_ratio] =
-        Website.where(url: cookies[:seedurl], user_id: current_user)
-               .pluck(:image_ratio)
-               .first
-    end
+    @website =
+      if cookies[:seedurl].present? && current_user.present?
+        Website.where(url: cookies[:seedurl], user_id: current_user.id).first
+      end
+
+    cookies[:image_ratio] = @website.image_ratio if @website.present?
 
     # -------------------------------
     # Fetch events from Condenser API
@@ -129,6 +129,11 @@ class EventsController < ApplicationController
       event[:microposts] = uris_with_posts.include?(event["rdf_uri"])
     end
 
+    wrapped_events = @events.map do |event|
+      PipelineBuilder::PipelineEvent.new(event, @website)
+    end
+    @pipeline_results = PipelineEvaluator.batch(events: wrapped_events)
+
     # -------------------------------
     # Render
     # -------------------------------
@@ -139,6 +144,7 @@ class EventsController < ApplicationController
       redirect_to root_path
     end
   end
+
 
   def show
     data = data = safe_resource(id: params[:id])
@@ -238,5 +244,10 @@ class EventsController < ApplicationController
     else
       @event_to_delete = params[:event_id].split(':')[1]
     end
+  end
+  private
+
+  def pipeline_key(event)
+    event["rdf_uri"] || event[:rdf_uri] || event["id"] || event[:id]
   end
 end

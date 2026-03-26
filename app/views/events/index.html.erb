@@ -15,6 +15,7 @@
 <br>
 <div class="columns is-multiline is-gapless is-centered">
   <% @events.each do |event| %>
+  <% pipeline_result = @pipeline_results[pipeline_key(event)] %>
   <div class="column is-one-third">
     <div class="event-thumbnail">
       <figure class="image is-<%= image_ratio %>">
@@ -28,6 +29,9 @@
       <span class="is-overlay event-status large-icons">
         <%= render 'status_icons', event: event %>
       </span>
+    </div>
+    <div class="mt-2 has-text-centered">
+      <%= render 'pipeline_badge', result: pipeline_result %>
     </div>
   </div>
   <% end %>

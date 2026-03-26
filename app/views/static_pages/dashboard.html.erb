@@ -186,18 +186,29 @@
               <%= metrics[:event_horizon_label] || "—" %>
               </td>
 
-              <td class="pipeline-column">
-                <% ph = metrics[:pipeline_health] %>
-                <% if !condenser_available %>
-                  —
-                <% elsif ph >= 95 %>
-                  <span class="tag is-success"><%= ph %>%</span>
-                <% elsif ph >= 70 %>
-                    <span class="tag is-warning"><%= ph %>%</span>
-                  <% else %>
-                    <span class="tag is-danger"><%= ph %>%</span>
-                  <% end %>
-              </td>
+<td class="pipeline-column pipeline-status-cell">
+  <% status = @pipeline_statuses[website.id] %>
+  <% if !website.monitorable? %>
+    —
+  <% elsif status.present? %>
+    <%= link_to events_path(seedurl: website.url, view: "list"), class: "pipeline-status-link", title: "View Events (Pipeline Health)", aria: { label: "View Events (Pipeline Health)" } do %>
+      <span class="pipeline-status <%= status[:status] %>">
+  <% if status[:status] == :broken %>
+    🔴 Broken
+  <% elsif status[:status] == :degraded %>
+    🟡 Degraded
+  <% else %>
+    🟢 Healthy
+  <% end %>
+</span>
+      <div class="pipeline-diagnosis has-text-grey is-size-7">
+        <%= status[:diagnosis] %>
+      </div>
+    <% end %>
+  <% else %>
+    —
+  <% end %>
+</td>
 
               <td class="pipeline-column">
                 <%= metrics[:days_since_last_webpage_label] || "—" %>
