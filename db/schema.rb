@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_03_08_050432) do
+ActiveRecord::Schema.define(version: 2026_03_19_120002) do
 
   create_table "microposts", force: :cascade do |t|
     t.text "content"
@@ -23,6 +23,20 @@ ActiveRecord::Schema.define(version: 2026_03_08_050432) do
     t.string "related_statement_language"
     t.string "related_subject_uri"
     t.index ["user_id"], name: "index_microposts_on_user_id"
+  end
+
+  create_table "pipeline_rules", force: :cascade do |t|
+    t.integer "website_id"
+    t.string "name", null: false
+    t.boolean "active", default: true, null: false
+    t.integer "position", default: 0, null: false
+    t.json "conditions", default: "\"\\\"\\\\\\\"\\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"{}\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\"\\\\\\\\\\\\\\\"\\\\\\\"\\\"\"", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "status", null: false
+    t.string "diagnosis", null: false
+    t.index ["website_id", "active", "position"], name: "index_pipeline_rules_on_scope_activity_position"
+    t.index ["website_id"], name: "index_pipeline_rules_on_website_id"
   end
 
   create_table "relationships", force: :cascade do |t|
@@ -68,9 +82,11 @@ ActiveRecord::Schema.define(version: 2026_03_08_050432) do
     t.integer "critical_days_since_last_webpage"
     t.integer "warning_event_horizon_days"
     t.integer "critical_event_horizon_days"
+    t.boolean "monitorable", default: true, null: false
     t.index ["user_id"], name: "index_websites_on_user_id"
   end
 
   add_foreign_key "microposts", "users"
+  add_foreign_key "pipeline_rules", "websites"
   add_foreign_key "websites", "users"
 end
