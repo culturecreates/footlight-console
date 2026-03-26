@@ -3,7 +3,7 @@ module SessionsHelper
 
   # Logs in the given user, prevents session fixation
   def log_in(user, notify: true)
-    reset_session
+    reset_session if respond_to?(:reset_session)
 
     if notify
       user.update(login_at: Time.current)
