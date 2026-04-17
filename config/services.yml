@@ -9,7 +9,8 @@ development:
   <<: *default
 
 staging:
-  <<: *default
+  condenser:
+    url: <%= ENV.fetch("CONDENSER_URL", "https://footlight-condenser-test-c24c162bb7c8.herokuapp.com") %>
 
 production:
   <<: *default
