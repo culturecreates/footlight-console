@@ -1,6 +1,7 @@
-<% if @resources["resources_by_class"][rdfs_class.downcase].present? %>
+<% resources = @resources.dig("resources_by_class", rdfs_class.downcase) || [] %>
 <h2 class="title"> <%= name %> </h2>
 
+<% if resources.present? %>
 <table class="table is-striped is-hoverable is-fullwidth">
   <thead>
     <tr>
@@ -10,7 +11,7 @@
   </thead>
   <tbody>
   
-    <% @resources["resources_by_class"][rdfs_class.downcase].each do |res| %>
+    <% resources.each do |res| %>
       <tr>
         <td>
         <a href="/resource?uri=<%= CGI.escape(res["uri"]) %> "> <%= res["name"] %>  </a> 
@@ -32,4 +33,6 @@
 
   </tbody>
 </table>
- <% end %>
+<% else %>
+<p class="has-text-grey">No resources found.</p>
+<% end %>

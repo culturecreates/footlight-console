@@ -109,6 +109,34 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
     }.to_json
   end
 
+  def with_successful_condenser_responses(statement_id)
+    resource_uri = "footlight:test-resource"
+    created_resource = {
+      "uri" => resource_uri,
+      "statements" => { "name_en" => { "value" => "Test resource" } }
+    }
+    linked_resource = {
+      "uri" => resource_uri,
+      "statements" => {
+        "name_en" => {
+          "id" => statement_id,
+          "value" => "Test resource",
+          "label" => "Name",
+          "language" => "en",
+          "subject" => resource_uri,
+          "status" => "ok",
+          "manual" => false
+        }
+      }
+    }
+
+    HTTParty.stub :post, FakeHttpResponse.new(body: created_resource.to_json) do
+      HTTParty.stub :patch, FakeHttpResponse.new(body: linked_resource.to_json) do
+        yield
+      end
+    end
+  end
+
   #
   # 1) Happy path: Google Places returns 200 with a valid body
   #
@@ -120,20 +148,22 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
       code: '200'
     )
 
-    HTTParty.stub :get, fake_http_response do
-      post linked_data_create_resource_path,
-           params: {
-             rdfs_class:   'Place',
-             seedurl:      'tourismedeschenaux-ca',
-             name:         '4145 ave beaconsfield',
-             name_lang:    'en',
-             address:      'ChIJnWHJM0sXyUwRBNA5S4k_b3I',
-             statement_id: 2667827
-           },
-           xhr: true
+    with_successful_condenser_responses(2667827) do
+      HTTParty.stub :get, fake_http_response do
+        post linked_data_create_resource_path,
+             params: {
+               rdfs_class:   'Place',
+               seedurl:      'tourismedeschenaux-ca',
+               name:         '4145 ave beaconsfield',
+               name_lang:    'en',
+               address:      'ChIJnWHJM0sXyUwRBNA5S4k_b3I',
+               statement_id: 2667827
+             },
+             xhr: true
 
-      assert_response :success
-      assert flash[:danger].blank?, "Expected no error flash on successful create_resource"
+        assert_response :success
+        assert flash[:danger].blank?, "Expected no error flash on successful create_resource"
+      end
     end
   end
 
@@ -149,20 +179,22 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
       code: '403'
     )
 
-    HTTParty.stub :get, failed_http_response do
-      post linked_data_create_resource_path,
-           params: {
-             rdfs_class:   "Place",
-             seedurl:      "tourismedeschenaux-ca",
-             name:         "Some place",
-             name_lang:    "en",
-             address:      "ChIJnWHJM0sXyUwRBNA5S4k_b3I",
-             statement_id: 2667827
-           },
-           xhr: true
+    with_successful_condenser_responses(2667827) do
+      HTTParty.stub :get, failed_http_response do
+        post linked_data_create_resource_path,
+             params: {
+               rdfs_class:   "Place",
+               seedurl:      "tourismedeschenaux-ca",
+               name:         "Some place",
+               name_lang:    "en",
+               address:      "ChIJnWHJM0sXyUwRBNA5S4k_b3I",
+               statement_id: 2667827
+             },
+             xhr: true
 
-      assert_response :success
-      assert flash[:danger].blank?, "Expected no error flash when Google Places fails"
+        assert_response :success
+        assert flash[:danger].blank?, "Expected no error flash when Google Places fails"
+      end
     end
   end
 
@@ -179,23 +211,25 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
       code: '200'
     )
 
-    HTTParty.stub :get, fake_http_response do
-      post linked_data_create_resource_path,
-           params: {
-             rdfs_class:   "Place",
-             seedurl:      "tourismedeschenaux-ca",
-             name:         "4145",  # matches shortText and is a bare number
-             name_lang:    "en",
-             address:      "ChIJnWHJM0sXyUwRBNA5S4k_b3I",
-             statement_id: 2667827
-           },
-           xhr: true
+    with_successful_condenser_responses(2667827) do
+      HTTParty.stub :get, fake_http_response do
+        post linked_data_create_resource_path,
+             params: {
+               rdfs_class:   "Place",
+               seedurl:      "tourismedeschenaux-ca",
+               name:         "4145",  # matches shortText and is a bare number
+               name_lang:    "en",
+               address:      "ChIJnWHJM0sXyUwRBNA5S4k_b3I",
+               statement_id: 2667827
+             },
+             xhr: true
 
-      # Mainly care that the branch runs without error.
-      assert_response :success
-      assert flash[:danger].blank?
-      # If later switch to controller-style tests, we can assert that
-      # options[:name][:value] == "4145 Av. Beaconsfield, Montréal, QC H4A 2H4, Canada".
+        # Mainly care that the branch runs without error.
+        assert_response :success
+        assert flash[:danger].blank?
+        # If later switch to controller-style tests, we can assert that
+        # options[:name][:value] == "4145 Av. Beaconsfield, Montréal, QC H4A 2H4, Canada".
+      end
     end
   end
 
@@ -206,19 +240,21 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
   test "create_resource for Person uses occupation disambiguating description" do
     log_in_as(@user)
 
-    post linked_data_create_resource_path,
-         params: {
-           rdfs_class:   "Person",
-           seedurl:      "tourismedeschenaux-ca",
-           name:         "Jane Doe",
-           name_lang:    "en",
-           occupation:   "Conductor",
-           statement_id: 2667827
-         },
-         xhr: true
+    with_successful_condenser_responses(2667827) do
+      post linked_data_create_resource_path,
+           params: {
+             rdfs_class:   "Person",
+             seedurl:      "tourismedeschenaux-ca",
+             name:         "Jane Doe",
+             name_lang:    "en",
+             occupation:   "Conductor",
+             statement_id: 2667827
+           },
+           xhr: true
 
-    assert_response :success
-    assert flash[:danger].blank?
+      assert_response :success
+      assert flash[:danger].blank?
+    end
   end
 
   #
@@ -227,25 +263,32 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
   test "create_resource_for_generic_class_falls_back_to_error_flash_when_Condenser_rejects_payload" do
     log_in_as(@user)
 
-    post linked_data_create_resource_path,
-        params: {
-          rdfs_class:   "Event",
-          seedurl:      "tourismedeschenaux-ca",
-          name:         "My test event",
-          name_lang:    "en",
-          statement_id: 2667827
-        },
-        xhr: true
+    failed_http_response = FakeHttpResponse.new(
+      body: { "error" => "Condenser rejected payload" }.to_json,
+      code: "422"
+    )
 
-    # With xhr: true, redirect_back becomes Turbolinks JS with status 200
-    assert_response :success
+    HTTParty.stub :post, failed_http_response do
+      post linked_data_create_resource_path,
+          params: {
+            rdfs_class:   "Event",
+            seedurl:      "tourismedeschenaux-ca",
+            name:         "My test event",
+            name_lang:    "en",
+            statement_id: 2667827
+          },
+          xhr: true
 
-    # We *do* expect the error branch: flash danger set
-    assert_not flash[:danger].blank?, "Expected an error flash when Condenser rejects the payload"
-    assert_includes flash[:danger], "My test event"
+      # With xhr: true, redirect_back becomes Turbolinks JS with status 200
+      assert_response :success
 
-    # Optional: assert we really got a Turbolinks redirect script
-    assert_includes response.body, "Turbolinks.visit"
+      # We *do* expect the error branch: flash danger set
+      assert_not flash[:danger].blank?, "Expected an error flash when Condenser rejects the payload"
+      assert_includes flash[:danger], "My test event"
+
+      # Optional: assert we really got a Turbolinks redirect script
+      assert_includes response.body, "Turbolinks.visit"
+    end
   end
 
 end

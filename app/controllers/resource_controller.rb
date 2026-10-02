@@ -22,9 +22,15 @@ class ResourceController < ApplicationController
   # GET /resource 
   def index 
     if params[:uri] 
-      @resource = helpers.condenser_get_resource(params[:uri])
+      resource = helpers.condenser_get_resource(params[:uri])
+      @resource = if resource.is_a?(Hash) && resource["statements"].is_a?(Hash)
+                    resource
+                  else
+                    { "uri" => params[:uri], "statements" => {} }
+                  end
+      @resource["uri"] ||= params[:uri]
       @seedurl = @resource["seedurl"]
-      @statements =  @resource["statements"]
+      @statements = @resource["statements"]
       @webpage_url = @statements.dig('webpage_link_en','value') || @statements.dig('webpage_link_fr','value')
       @webpage_url_fr = @statements.dig('webpage_link_fr','value') 
 
@@ -35,10 +41,18 @@ class ResourceController < ApplicationController
         @microposts_all_statements = { params[:uri] => helpers.get_resource_microposts(@resource, @subject_uri) }
       end
       # derived links
-      @links = helpers.condenser_search_statements(@subject_uri)  
+      @links = @statements.empty? ? [] : helpers.condenser_search_statements(@subject_uri)
       render 'show'
     else
-      @resources = helpers.condenser_get_website_resources(cookies[:seedurl])
+      seedurl = params[:seedurl].presence || cookies[:seedurl]
+      resources = helpers.condenser_get_website_resources(seedurl)
+      resource_classes = %w[place person organization event_type resource_list]
+      resource_collections = if resources.is_a?(Hash)
+                               resources["resources_by_class"] || resources.slice(*resource_classes)
+                             else
+                               {}
+                             end
+      @resources = { "resources_by_class" => resource_collections }
     end
   end
 

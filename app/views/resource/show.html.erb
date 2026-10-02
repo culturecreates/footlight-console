@@ -25,6 +25,10 @@
   <% end %>
 </p>
 </h1>
+
+<% if @seedurl.present? %>
+  <h2 class="subtitle">Defined in <%= link_to @seedurl, resource_index_path(seedurl: @seedurl) %></h2>
+<% end %>
  
 <% @resource["statements"].sort.each do |key,stat| %>
 <div class="columns">
