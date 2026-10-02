@@ -25,10 +25,17 @@
             url: $('#recon_url').val(),
             data: function(params) {
                 let search_class = $('#recon_type').val();
-                return {
+                let search_query = {
                     query: params.term,
                     type: search_class
                 };
+                <% if @expected_class == "EventType" && @recon_name == "Artsdata" %>
+                    search_query.properties = [{
+                        pid: "skos:inScheme",
+                        v: "<http://kg.artsdata.ca/resource/ArtsdataEventTypes>"
+                    }];
+                <% end %>
+                return search_query;
             },
             dataType: 'json',
             delay: 500,
