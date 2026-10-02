@@ -254,7 +254,7 @@ class LinkedDataController < ApplicationController
     if recon_name == "Artsdata"
       recon_url = artsdata_recon_url_per_environment
       recon_type =  if expected_class == "EventType"
-                      "ado:EventType" 
+                      "skos:Concept"
                     else
                       expected_class
                     end
