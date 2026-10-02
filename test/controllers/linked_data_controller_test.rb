@@ -6,6 +6,19 @@ class LinkedDataControllerTest < ActionDispatch::IntegrationTest
     @user = users(:michael)
   end
 
+  test "Artsdata EventType linker uses a reconciliation query batch" do
+    log_in_as(@user)
+
+    get "/linked_data/linker",
+        params: { expected_class: "EventType", statement_id: 123 },
+        xhr: true
+
+    assert_response :success
+    assert_includes response.body, "queries: JSON.stringify({ q0: search_query })"
+    assert_includes response.body, "data = data.q0;"
+    assert_includes response.body, 'pid: "skos:inScheme"'
+  end
+
   #
   # Simple fake HTTParty response that behaves like the real object
   # (supports .code, .body, and .response.code)

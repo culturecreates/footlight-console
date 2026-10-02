@@ -34,12 +34,18 @@
                         pid: "skos:inScheme",
                         v: "<http://kg.artsdata.ca/resource/ArtsdataEventTypes>"
                     }];
+                    return {
+                        queries: JSON.stringify({ q0: search_query })
+                    };
                 <% end %>
                 return search_query;
             },
             dataType: 'json',
             delay: 500,
             processResults: function(data, params) {
+                <% if @expected_class == "EventType" && @recon_name == "Artsdata" %>
+                    data = data.q0;
+                <% end %>
                 <% if current_user&.admin? && @recon_name == "Footlight" %>
                     $("#search_string").text(params.term); // store the original search string
                     data.result.push({ name: 'Create new...'});

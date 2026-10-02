@@ -93,8 +93,7 @@ module CondenserHelper
   end
 
   def condenser_url_per_environment
-    if Rails.env.development? || Rails.env.test?
-      #'https://footlight-condenser.herokuapp.com'
+    if Rails.env.test?
       'http://localhost:3000'
     else
       'https://footlight-condenser.herokuapp.com'

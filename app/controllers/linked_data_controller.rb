@@ -232,7 +232,7 @@ class LinkedDataController < ApplicationController
 
 
   def  artsdata_recon_url_per_environment
-    if Rails.env.development?  || Rails.env.test? 
+    if Rails.env.test?
         'http://localhost:3003/recon';
     else
         'https://api.artsdata.ca/recon';
@@ -240,8 +240,7 @@ class LinkedDataController < ApplicationController
   end
 
   def footlight_recon_url_per_environment
-    if Rails.env.development?  || Rails.env.test? 
-      # 'https://footlight-condenser.herokuapp.com/recon';
+    if Rails.env.test?
        'http://localhost:3000/recon';
     else
       'https://footlight-condenser.herokuapp.com/recon';
