@@ -122,6 +122,7 @@ class EventsController < ApplicationController
     # -------------------------------
     uris = @events.map { |e| e["rdf_uri"] }
     uris_with_posts = Micropost.where(related_subject_uri: uris)
+                               .reorder(nil)
                                .distinct
                                .pluck(:related_subject_uri)
                                .to_set

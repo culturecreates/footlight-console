@@ -24,6 +24,7 @@ module EventsHelper
 
     uris_with_comments = Micropost
       .where(related_subject_uri: rdf_url_list)
+      .reorder(nil)
       .distinct
       .pluck(:related_subject_uri)
       .to_set
