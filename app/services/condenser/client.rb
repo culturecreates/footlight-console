@@ -43,9 +43,17 @@ module Condenser
     private
 
     def request_options(method, query, body)
-      options = { headers: { "Content-Type" => "application/json" }, timeout: DEFAULT_TIMEOUT }
+      options = {
+        headers: { "Content-Type" => "application/json" },
+        timeout: DEFAULT_TIMEOUT,
+        basic_auth: {
+          username: ENV.fetch("CONDENSER_USERNAME"),
+          password: ENV.fetch("CONDENSER_PASSWORD")
+        }
+      }
+
       options[:query] = query if method == :get && query.present?
-      options[:body]  = body.to_json if method != :get && body.present?
+      options[:body] = body.to_json if method != :get && body.present?
       options
     end
 
