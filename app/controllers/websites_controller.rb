@@ -72,7 +72,7 @@ class WebsitesController < ApplicationController
   end
 
   def show
-    @data = safe_website_resources @website.url
+    @data = safe_website_resources(seedurl: @website.url)
 
     if @data.blank? || @data["resources_by_class"].values.flatten.empty?
       render "closed_beta"
