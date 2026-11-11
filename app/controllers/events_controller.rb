@@ -66,6 +66,11 @@ class EventsController < ApplicationController
       data = safe_events(seedurl: cookies[:seedurl])
     end
 
+    if data["unavailable"]
+      flash[:warning] = "The complete event list could not be loaded from Condenser. Please try again."
+      redirect_to root_path and return
+    end
+
     # -------------------------------
     # Flash notifications
     # -------------------------------

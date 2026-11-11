@@ -47,7 +47,7 @@ class MetricsInterpreter
     warning  = WebsiteDefaults.threshold(website, :warning_days_since_last_webpage)
     critical = WebsiteDefaults.threshold(website, :critical_days_since_last_webpage)
 
-    return 100 if days_since_last_webpage.nil?
+    return nil if days_since_last_webpage.nil?
 
     return 0  if critical > 0 && days_since_last_webpage >= critical
     return 50 if warning  > 0 && days_since_last_webpage >= warning
@@ -66,9 +66,9 @@ class MetricsInterpreter
   def health_score(raw)
 
     publishable_ratio = raw["publishable_ratio"]&.to_f
-    total_webpages    = raw["total_webpages"].to_i
+    total_webpages    = raw["total_webpages"]&.to_i
 
-    return nil if total_webpages.zero?
+    return nil if total_webpages.nil? || total_webpages.zero?
 
     publishable_ratio
   end
@@ -139,10 +139,10 @@ class MetricsInterpreter
 
     raw = @metrics[seedurl] || {}
 
-    total_webpages    = raw["total_webpages"].to_i
+    total_webpages    = raw["total_webpages"]&.to_i
     publishable_ratio = raw["publishable_ratio"]&.to_f
-    days_overdue      = raw["days_overdue"].to_i
-    event_horizon_raw = raw["event_horizon_days"].to_i
+    days_overdue      = raw["days_overdue"]&.to_i
+    event_horizon_raw = raw["event_horizon_days"]&.to_i
 
 
     last_webpage_created_at =
@@ -195,7 +195,7 @@ class MetricsInterpreter
     # Publishable ratio undefined when no webpages exist
     # ------------------------------------------------------------------------------------------------------------------
 
-    publishable_ratio = nil if total_webpages.zero?
+    publishable_ratio = nil if total_webpages.nil? || total_webpages.zero?
 
 
     {

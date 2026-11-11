@@ -158,7 +158,7 @@
                 <% condenser_stats = row[:condenser] %>
                 <% metrics = row[:metrics] %>
                 <% health = metrics[:health_score] %>
-                <% publishable = metrics[:publishable_ratio] || 0 %>
+                <% publishable = metrics[:publishable_ratio] %>
 
                 <tr>
                   <td>
@@ -170,7 +170,7 @@
                               title="No new events discovered for <%= metrics[:days_since_last_webpage_label] %>">
                           ⚠️
                         </span>
-                      <% elsif !health %>
+                      <% elsif metrics[:total_webpages] == 0 %>
                         <span class="tag is-warning is-light" title="No events currently detected for this website">
                           ⚠️ 0
                         </span>
@@ -207,7 +207,7 @@
                   </td>
 
                   <td>
-                    <% if !condenser_available %>
+                    <% if !condenser_available || publishable.nil? %>
                       —
                     <% elsif publishable >= 95 %>
                       <span class="has-text-success"><%= publishable %>%</span>

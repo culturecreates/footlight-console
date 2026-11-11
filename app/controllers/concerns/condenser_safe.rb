@@ -48,10 +48,18 @@ module CondenserSafe
   def safe_events(seedurl:, start_date: nil)
     params = normalize_params(seedurl: seedurl, start_date: start_date)
 
-    safe_condenser(default: { "events" => [] }, action: "events #{seedurl}") do
-      Condenser::API.website_events(**params)
-    end.tap do |result|
-      result["events"] = Array(result["events"])
+    safe_condenser(default: { "events" => [], "unavailable" => true }, action: "events #{seedurl}") do
+      result = Condenser::API.website_events(**params)
+      unless result.is_a?(Hash) && result["events"].is_a?(Array)
+        raise TypeError, "Invalid events response"
+      end
+
+      # Console needs every event before applying status filters and pagination.
+      if result.key?("total_events") && result["total_events"] != result["events"].length
+        raise ArgumentError, "Incomplete events response: received #{result['events'].length}, reported #{result['total_events'].inspect}"
+      end
+
+      result
     end
   end
 

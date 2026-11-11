@@ -2,6 +2,40 @@ require 'test_helper'
 require 'minitest/mock'
 
 class EventsControllerTest < ActionDispatch::IntegrationTest
+  test "counts and filters use the complete collection beyond the first API page" do
+    website = create_website(user: users(:michael), slug: "events-complete-collection")
+    log_in_as(users(:michael))
+    events = (1..198).map { |id| event_payload(id: id) }
+    events.last["statements_status"]["problem"] = true
+
+    Condenser::API.stub :website_events, { "events" => events, "total_events" => 198 } do
+      PipelineEvaluator.stub :batch, {} do
+        get events_path(seedurl: website.url, view: "list", filter: "flagged")
+      end
+    end
+
+    assert_response :success
+    assert_select "h1.title", text: /198 Upcoming Events/
+    assert_select "tbody tr", 1
+    assert_select "tbody td a", text: "Event 198"
+  end
+
+  test "partial API responses show an error instead of misleading event totals" do
+    website = create_website(user: users(:michael), slug: "events-partial-collection")
+    log_in_as(users(:michael))
+    events = (1..25).map { |id| event_payload(id: id) }
+
+    Condenser::API.stub :website_events, { "events" => events, "total_events" => 198 } do
+      PipelineEvaluator.stub :batch, ->(**) { flunk "Partial event lists must not be evaluated" } do
+        get events_path(seedurl: website.url, view: "list")
+      end
+    end
+
+    assert_redirected_to root_path
+    assert_match "The complete event list could not be loaded", flash[:warning]
+    assert_nil flash[:info]
+  end
+
   test "list view evaluates pipeline in a single batch call" do
     website = create_website(user: users(:michael), slug: "events-pipeline-batch")
     log_in_as(users(:michael))

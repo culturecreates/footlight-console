@@ -13,22 +13,16 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :found
   end
 
-  test "dashboard shows pipeline aggregate status for a monitorable website" do
+  test "dashboard offers on demand diagnostics without fetching or evaluating every website" do
     user = create_user("dashboard-monitorable-user")
     website = create_website(user: user, slug: "dashboard-monitorable", monitorable: true)
 
     log_in_as(user)
 
     with_dashboard_config do
-      Condenser::API.stub :website_events, { "events" => [] } do
+      Condenser::API.stub :website_events, ->(**) { flunk "Dashboard must not fetch per website events" } do
         DashboardBuilder.stub :new, ->(**) { FakeDashboardBuilder.new([dashboard_row(website)]) } do
-          PipelineAggregateStatus.stub :call, ->(rows:) {
-            {
-              status: :broken,
-              diagnosis: "2 of 10 events are broken",
-              stats: {}
-            }
-          } do
+          PipelineAggregateStatus.stub :call, ->(**) { flunk "Dashboard must not aggregate pipelines" } do
             get dashboard_path
           end
         end
@@ -36,8 +30,7 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select "td.pipeline-status-cell span.pipeline-status.broken", text: /Broken/
-    assert_select "td.pipeline-status-cell .pipeline-diagnosis", text: "2 of 10 events are broken"
+    assert_select "td.pipeline-column a[href=?]", pipeline_website_path(website), text: "Check"
   end
 
   test "dashboard shows dash for a non monitorable website" do
@@ -55,36 +48,68 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select "td.pipeline-status-cell", text: "—"
+    assert_select "td.pipeline-column a", 0
+    assert_select "td.pipeline-column", text: "—", count: 2
   end
 
-  test "dashboard links the pipeline status cell to the events page" do
+  test "missing monitoring does not imply zero events or zero publishability" do
     user = create_user("dashboard-link-user")
     website = create_website(user: user, slug: "dashboard-link", monitorable: true)
 
     log_in_as(user)
 
-    with_dashboard_config do
-      Condenser::API.stub :website_events, { "events" => [] } do
-        DashboardBuilder.stub :new, ->(**) { FakeDashboardBuilder.new([dashboard_row(website)]) } do
-          PipelineAggregateStatus.stub :call, ->(rows:) {
-            {
-              status: :degraded,
-              diagnosis: "1 of 3 events are degraded",
-              stats: {}
-            }
-          } do
-            get dashboard_path
-          end
-        end
-      end
-    end
+    row = dashboard_row(website).merge(
+      condenser_available: true,
+      condenser: { "webpages" => 262, "statements_refreshed_24hr" => 228, "statements_updated_24hr" => 211 },
+      metrics: MetricsInterpreter.new({}, []).metrics_for(website.url, website)
+    )
+    render_dashboard_row(row)
 
     assert_response :success
-    assert_select "td.pipeline-status-cell a.pipeline-status-link[href=?]", events_path(seedurl: website.url, view: "list")
+    assert_select ".dashboard-site .tag", 0
+    assert_select "tbody td:nth-child(4)", text: /228\s*\/\s*211/
+    assert_select "tbody td:nth-child(7)", text: "—"
+    assert_select "tbody td:nth-child(8)", text: "—"
+    assert_select "tbody td:nth-child(10)", text: "—"
+  end
+
+  test "known zero event count displays the zero badge" do
+    user = create_user("dashboard-zero-user")
+    website = create_website(user: user, slug: "dashboard-zero", monitorable: true)
+    log_in_as(user)
+    row = dashboard_row(website).merge(condenser_available: true, metrics: { total_webpages: 0 })
+
+    render_dashboard_row(row)
+
+    assert_response :success
+    assert_select ".dashboard-site .tag", text: "⚠️ 0"
+    assert_select "tbody td:nth-child(8)", text: "—"
+  end
+
+  test "measured zero publishability remains visible when events exist" do
+    user = create_user("dashboard-unpublishable-user")
+    website = create_website(user: user, slug: "dashboard-unpublishable", monitorable: true)
+    log_in_as(user)
+    row = dashboard_row(website).merge(
+      condenser_available: true, metrics: { total_webpages: 10, health_score: 0, publishable_ratio: 0 }
+    )
+
+    render_dashboard_row(row)
+
+    assert_response :success
+    assert_select ".dashboard-site .tag", 0
+    assert_select "tbody td:nth-child(8)", text: "0%"
   end
 
   private
+
+  def render_dashboard_row(row)
+    with_dashboard_config do
+      DashboardBuilder.stub :new, ->(**) { FakeDashboardBuilder.new([row]) } do
+        get dashboard_path
+      end
+    end
+  end
 
   FakeDashboardBuilder = Struct.new(:rows) do
     def build
