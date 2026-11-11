@@ -1,8 +1,71 @@
 <% if logged_in? %>
   <% condenser_ok = @dashboard_rows.first&.dig(:condenser_available) %>
 
-  <section class="section pb-3">
-    <div class="container">
+  <style>
+    /* Let the dashboard use the screen width instead of Bulma's capped container. */
+    .dashboard-section {
+      padding-right: 1rem;
+      padding-left: 1rem;
+    }
+
+    .dashboard-section > .container.dashboard-container {
+      width: 100%;
+      max-width: none;
+      padding-right: 0;
+      padding-left: 0;
+    }
+
+    /* Narrow windows scroll the table rather than wrapping every website row. */
+    .dashboard-table-scroll {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .table.dashboard-table {
+      width: 100%;
+      table-layout: auto;
+    }
+
+    .table.dashboard-table th,
+    .table.dashboard-table td {
+      padding: 0.35rem 0.6rem;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .dashboard-site,
+    .dashboard-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+
+    .dashboard-site .icon {
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
+    .dashboard-site .tag,
+    .dashboard-table td > .tag {
+      height: 1.5em;
+    }
+
+    .dashboard-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .dashboard-actions .button {
+      height: 1.8rem;
+      margin: 0;
+      padding: 0.2rem 0.5rem;
+    }
+  </style>
+
+  <section class="section dashboard-section pb-3">
+    <div class="container is-fluid dashboard-container">
       <!-- Page identity -->
       <div class="level mb-4">
         <div class="level-left">
@@ -51,154 +114,155 @@
     </div>
   </section>
 
-  <section class="section pt-0">
-    <div class="container">
+  <section class="section dashboard-section pt-0">
+    <div class="container is-fluid dashboard-container">
       <% if @dashboard_rows.present? %>
-        <table class="table is-striped is-hoverable is-fullwidth">
-          <thead>
-            <!-- Group headings match the columns below. -->
-            <tr class="dashboard-groups">
-              <th colspan="4" scope="colgroup" class="group-website">Website</th>
-              <th colspan="4" scope="colgroup" class="group-quality">Content Quality</th>
-              <th colspan="2" scope="colgroup" class="group-scheduling">Scheduling</th>
-              <th colspan="2" scope="colgroup" class="group-pipeline pipeline-column">Pipeline</th>
-              <th scope="col" class="is-hidden-mobile"></th>
-            </tr>
-            <tr>
-              <th scope="col"><%= dashboard_sort_link("website", t(:website)) %></th>
-              <th scope="col"><%= dashboard_sort_link("webpages", t(:webpages)) %></th>
-              <th scope="col"><%= dashboard_sort_link("statements", "Statements") %></th>
-              <th scope="col" class="is-hidden-mobile">Statement Activity (last 24h)</th>
-              <th scope="col"><%= dashboard_sort_link("flags", t(:flags)) %></th>
-              <th scope="col"><%= dashboard_sort_link("updates", t(:updates)) %></th>
-              <th scope="col">
-                <%= dashboard_sort_link(
-                      "health",
-                      "Health#{condenser_ok ? '' : ' ⚠️'}".html_safe,
-                      title: "Condenser: #{condenser_url} — #{condenser_ok ? 'responding' : 'not responding'}"
-                    ) %>
-              </th>
-              <th scope="col"><%= dashboard_sort_link("publishable", "Publishable") %></th>
-              <th scope="col"><%= dashboard_sort_link("overdue", "Overdue") %></th>
-              <th scope="col"><%= dashboard_sort_link("horizon", "Horizon") %></th>
-              <th scope="col" class="pipeline-column"><%= dashboard_sort_link("pipeline", "Pipeline") %></th>
-              <th scope="col" class="pipeline-column"><%= dashboard_sort_link("activity", "Days since new event") %></th>
-              <th scope="col" class="is-hidden-mobile"></th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <% @dashboard_rows.each do |row| %>
-              <% condenser_available = row[:condenser_available] %>
-              <% website = row[:website] %>
-              <% condenser_stats = row[:condenser] %>
-              <% metrics = row[:metrics] %>
-              <% health = metrics[:health_score] %>
-              <% publishable = metrics[:publishable_ratio] || 0 %>
-
+        <div class="dashboard-table-scroll" role="region" aria-label="Website dashboard" tabindex="0">
+          <table class="table dashboard-table is-striped is-hoverable is-fullwidth">
+            <thead>
+              <!-- Group headings match the columns below. -->
+              <tr class="dashboard-groups">
+                <th colspan="4" scope="colgroup" class="group-website">Website</th>
+                <th colspan="4" scope="colgroup" class="group-quality">Content Quality</th>
+                <th colspan="2" scope="colgroup" class="group-scheduling">Scheduling</th>
+                <th colspan="2" scope="colgroup" class="group-pipeline pipeline-column">Pipeline</th>
+                <th scope="col" class="is-hidden-mobile"></th>
+              </tr>
               <tr>
-                <td>
-                  <%= link_to display_website_url(website.url), events_path(seedurl: website.url) %>
+                <th scope="col"><%= dashboard_sort_link("website", t(:website)) %></th>
+                <th scope="col"><%= dashboard_sort_link("webpages", t(:webpages)) %></th>
+                <th scope="col"><%= dashboard_sort_link("statements", "Statements") %></th>
+                <th scope="col" class="is-hidden-mobile" title="Statements refreshed / updated in the last 24 hours">24h activity</th>
+                <th scope="col"><%= dashboard_sort_link("flags", t(:flags)) %></th>
+                <th scope="col"><%= dashboard_sort_link("updates", t(:updates)) %></th>
+                <th scope="col">
+                  <%= dashboard_sort_link(
+                        "health",
+                        "Health#{condenser_ok ? '' : ' ⚠️'}".html_safe,
+                        title: "Condenser: #{condenser_url} — #{condenser_ok ? 'responding' : 'not responding'}"
+                      ) %>
+                </th>
+                <th scope="col"><%= dashboard_sort_link("publishable", "Publishable") %></th>
+                <th scope="col"><%= dashboard_sort_link("overdue", "Overdue") %></th>
+                <th scope="col"><%= dashboard_sort_link("horizon", "Horizon") %></th>
+                <th scope="col" class="pipeline-column"><%= dashboard_sort_link("pipeline", "Pipeline") %></th>
+                <th scope="col" class="pipeline-column"><%= dashboard_sort_link("activity", "New event age", title: "Days since a new event webpage was discovered") %></th>
+                <th scope="col" class="is-hidden-mobile"></th>
+              </tr>
+            </thead>
 
-                  <% if metrics[:pipeline_warning] %>
-                    <span class="icon has-text-warning"
-                          title="No new events discovered for <%= metrics[:days_since_last_webpage_label] %>">
-                      ⚠️
-                    </span>
-                  <% elsif !health %>
-                    <span class="tag is-warning is-light" title="No events currently detected for this website">
-                      ⚠️ 0
-                    </span>
-                  <% end %>
-                </td>
+            <tbody>
+              <% @dashboard_rows.each do |row| %>
+                <% condenser_available = row[:condenser_available] %>
+                <% website = row[:website] %>
+                <% condenser_stats = row[:condenser] %>
+                <% metrics = row[:metrics] %>
+                <% health = metrics[:health_score] %>
+                <% publishable = metrics[:publishable_ratio] || 0 %>
 
-                <td class="has-text-right"><%= condenser_stats["webpages"] %></td>
-                <td class="has-text-right"><%= condenser_stats["statements_grouped"] %></td>
+                <tr>
+                  <td>
+                    <div class="dashboard-site">
+                      <%= link_to display_website_url(website.url), events_path(seedurl: website.url), title: display_website_url(website.url) %>
 
-                <td class="is-hidden-mobile">
-                  <% if condenser_available && health %>
-                    <%= condenser_stats["statements_refreshed_24hr"] %> crawled,
-                    <%= condenser_stats["statements_updated_24hr"] %> updated.
-                  <% else %>
-                    —
-                  <% end %>
-                </td>
+                      <% if metrics[:pipeline_warning] %>
+                        <span class="icon has-text-warning"
+                              title="No new events discovered for <%= metrics[:days_since_last_webpage_label] %>">
+                          ⚠️
+                        </span>
+                      <% elsif !health %>
+                        <span class="tag is-warning is-light" title="No events currently detected for this website">
+                          ⚠️ 0
+                        </span>
+                      <% end %>
+                    </div>
+                  </td>
 
-                <td class="has-text-right"><%= condenser_available ? condenser_stats["flags"] : "—" %></td>
-                <td class="has-text-right"><%= condenser_available ? condenser_stats["updates"] : "—" %></td>
+                  <td class="has-text-right"><%= condenser_stats["webpages"] %></td>
+                  <td class="has-text-right"><%= condenser_stats["statements_grouped"] %></td>
 
-                <td>
-                  <% if !condenser_available || !health %>
-                    —
-                  <% elsif health >= 95 %>
-                    <span class="tag is-success"><%= health.round %>%</span>
-                  <% elsif health >= 85 %>
-                    <span class="tag is-warning"><%= health.round %>%</span>
-                  <% else %>
-                    <span class="tag is-danger"><%= health.round %>%</span>
-                  <% end %>
-                </td>
-
-                <td>
-                  <% if !condenser_available %>
-                    —
-                  <% elsif publishable >= 95 %>
-                    <span class="has-text-success"><%= publishable %>%</span>
-                  <% elsif publishable >= 85 %>
-                    <span class="has-text-warning"><%= publishable %>%</span>
-                  <% else %>
-                    <span class="has-text-danger"><%= publishable %>%</span>
-                  <% end %>
-                </td>
-
-                <td>
-                  <% if condenser_available %>
-                    <% risk = metrics[:schedule_risk_level] %>
-                    <% overdue_days = metrics[:days_overdue] || 0 %>
-                    <% if risk == :ok %>
-                      <span class="tag is-success">On time</span>
-                    <% elsif risk == :warning %>
-                      <span class="tag is-warning"><%= overdue_days %>d late</span>
-                    <% elsif risk == :critical %>
-                      <span class="tag is-danger"><%= overdue_days %>d late</span>
+                  <td class="is-hidden-mobile">
+                    <% if condenser_available && health %>
+                      <span title="Statements refreshed / updated in the last 24 hours">
+                        <%= condenser_stats["statements_refreshed_24hr"] %> / <%= condenser_stats["statements_updated_24hr"] %>
+                      </span>
                     <% else %>
                       —
                     <% end %>
-                  <% else %>
-                    —
-                  <% end %>
-                </td>
+                  </td>
 
-                <td><%= metrics[:event_horizon_label] || "—" %></td>
+                  <td class="has-text-right"><%= condenser_available ? condenser_stats["flags"] : "—" %></td>
+                  <td class="has-text-right"><%= condenser_available ? condenser_stats["updates"] : "—" %></td>
 
-                <!-- Detailed diagnostics run only when this link is opened. -->
-                <td class="pipeline-column">
-                  <% if website.monitorable? %>
-                    <%= link_to "Check pipeline", pipeline_website_path(website) %>
-                  <% else %>
-                    —
-                  <% end %>
-                </td>
+                  <td>
+                    <% if !condenser_available || !health %>
+                      —
+                    <% elsif health >= 95 %>
+                      <span class="tag is-success"><%= health.round %>%</span>
+                    <% elsif health >= 85 %>
+                      <span class="tag is-warning"><%= health.round %>%</span>
+                    <% else %>
+                      <span class="tag is-danger"><%= health.round %>%</span>
+                    <% end %>
+                  </td>
 
-                <td class="pipeline-column"><%= metrics[:days_since_last_webpage_label] || "—" %></td>
+                  <td>
+                    <% if !condenser_available %>
+                      —
+                    <% elsif publishable >= 95 %>
+                      <span class="has-text-success"><%= publishable %>%</span>
+                    <% elsif publishable >= 85 %>
+                      <span class="has-text-warning"><%= publishable %>%</span>
+                    <% else %>
+                      <span class="has-text-danger"><%= publishable %>%</span>
+                    <% end %>
+                  </td>
 
-                <td class="is-hidden-mobile">
-                  <div class="field has-addons pull-right">
-                    <p class="control">
+                  <td>
+                    <% if condenser_available %>
+                      <% risk = metrics[:schedule_risk_level] %>
+                      <% overdue_days = metrics[:days_overdue] || 0 %>
+                      <% if risk == :ok %>
+                        <span class="tag is-success">On time</span>
+                      <% elsif risk == :warning %>
+                        <span class="tag is-warning"><%= overdue_days %>d late</span>
+                      <% elsif risk == :critical %>
+                        <span class="tag is-danger"><%= overdue_days %>d late</span>
+                      <% else %>
+                        —
+                      <% end %>
+                    <% else %>
+                      —
+                    <% end %>
+                  </td>
+
+                  <td><%= metrics[:event_horizon_label] || "—" %></td>
+
+                  <!-- Detailed diagnostics run only when this link is opened. -->
+                  <td class="pipeline-column">
+                    <% if website.monitorable? %>
+                      <%= link_to "Check", pipeline_website_path(website), title: "Check pipeline for #{display_website_url(website.url)}" %>
+                    <% else %>
+                      —
+                    <% end %>
+                  </td>
+
+                  <td class="pipeline-column"><%= metrics[:days_since_last_webpage_label] || "—" %></td>
+
+                  <td class="is-hidden-mobile">
+                    <div class="dashboard-actions">
                       <%= link_to "Settings", edit_website_path(website), class: "button is-info is-small" %>
-                    </p>
-                    <% if current_user.admin? %>
-                      <p class="control">
+                      <% if current_user.admin? %>
                         <%= link_to "delete", website, method: :delete,
                                     data: { confirm: "You sure?" }, class: "button is-danger is-small" %>
-                      </p>
-                    <% end %>
-                  </div>
-                </td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
+                      <% end %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
       <% end %>
     </div>
   </section>
