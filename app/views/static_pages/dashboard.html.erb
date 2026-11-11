@@ -182,7 +182,7 @@
                   <td class="has-text-right"><%= condenser_stats["statements_grouped"] %></td>
 
                   <td class="is-hidden-mobile">
-                    <% if condenser_available && health %>
+                    <% if condenser_available %>
                       <span title="Statements refreshed / updated in the last 24 hours">
                         <%= condenser_stats["statements_refreshed_24hr"] %> / <%= condenser_stats["statements_updated_24hr"] %>
                       </span>
