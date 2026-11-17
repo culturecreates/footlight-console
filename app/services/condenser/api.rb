@@ -41,6 +41,7 @@ module Condenser
     # Endpoints: data transformations and retrieval 
     # --------------------------------------------------
     ENDPOINTS = {
+      monitoring_issues: { method: :get, path: "/monitoring.json", params: [:seedurl, :status, :page] },
 
       # --------------------------------------------------
       # Dashboard: overall view of websites - health

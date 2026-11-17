@@ -14,6 +14,8 @@ Rails.application.routes.draw do
 
   root 'static_pages#dashboard'
 
+  get "monitoring", to: "monitoring#index", as: :monitoring
+
   get 'dashboard', to: 'static_pages#dashboard'
   get 'about',     to: 'static_pages#about'
   get 'contact',   to: 'static_pages#contact'
