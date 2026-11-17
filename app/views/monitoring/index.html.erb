@@ -1,7 +1,7 @@
 <section class="section">
   <div class="container is-fluid">
     <h1 class="title">Monitoring</h1>
-    <p class="mb-4">Errors explicitly flagged by DSL. A successful statement refresh resolves its issue. Optional email digests and the weekly pulse summarize these same open issues.</p>
+    <p class="mb-4">Flagged DSL errors and problems from enrolled preprocessing policies. Each issue resolves when its own condition recovers. Optional email digests and the weekly pulse summarize these same open issues.</p>
     <% if @monitoring_error %>
       <div class="notification is-warning"><%= @monitoring_error %> <%= link_to "Retry", monitoring_path(seedurl: @seedurl, status: @status, page: @page) %></div>
     <% else %>
@@ -19,12 +19,13 @@
           <tbody>
             <% @feed["issues"].each do |issue| %>
               <tr>
-                <td><strong><%= issue["website_name"].presence || issue["seedurl"] %></strong><br><%= issue["property_name"] %></td>
+                <td><strong><%= issue["website_name"].presence || issue["seedurl"] %></strong><br><%= issue["property_name"] %><br><%= (issue["kind"].presence || "dsl_error").to_s.humanize %></td>
                 <td><%= issue["message"] %></td><td><span title="First seen: <%= issue["first_seen_at"] %>"><%= issue["last_seen_at"] %></span></td><td><%= issue["occurrences"] %></td>
                 <td><span class="tag <%= issue["resolved_at"].present? ? 'is-success' : 'is-danger' %>"><%= issue["resolved_at"].present? ? "Resolved" : "Open" %></span></td>
                 <td>
                   <%= link_to "Source", "#{Condenser::API.base_url}/sources/#{issue['source_id'].to_i}" %>
                   <% if issue["statement_id"].present? %> · <%= link_to "Statement", "#{Condenser::API.base_url}/statements/#{issue['statement_id'].to_i}" %><% end %>
+                  <% if issue["preprocessing_policy_id"].present? %> · <%= link_to "Policy", "#{Condenser::API.base_url}/preprocessing_policies/#{issue['preprocessing_policy_id'].to_i}/edit" %><% end %>
                 </td>
               </tr>
             <% end %>
