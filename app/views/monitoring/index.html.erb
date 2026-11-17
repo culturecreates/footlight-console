@@ -1,7 +1,7 @@
 <section class="section">
   <div class="container is-fluid">
     <h1 class="title">Monitoring</h1>
-    <p class="mb-4">Errors explicitly flagged by DSL. A successful statement refresh resolves its issue. Email is an optional daily summary.</p>
+    <p class="mb-4">Errors explicitly flagged by DSL. A successful statement refresh resolves its issue. Optional email digests and the weekly pulse summarize these same open issues.</p>
     <% if @monitoring_error %>
       <div class="notification is-warning"><%= @monitoring_error %> <%= link_to "Retry", monitoring_path(seedurl: @seedurl, status: @status, page: @page) %></div>
     <% else %>
