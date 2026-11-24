@@ -49,7 +49,8 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select "td.pipeline-column a", 0
-    assert_select "td.pipeline-column", text: "—", count: 2
+    assert_select "td.pipeline-column", text: "—", count: 1
+    assert_select "td.dashboard-inventory", text: "—"
   end
 
   test "missing monitoring does not imply zero events or zero publishability" do
@@ -84,6 +85,40 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".dashboard-site .tag", text: "⚠️ 0"
     assert_select "tbody td:nth-child(8)", text: "—"
+  end
+
+  test "dashboard displays Condenser's inventory freshness and a measured zero" do
+    user = create_user("dashboard-inventory-user")
+    website = create_website(user: user, slug: "dashboard-inventory", monitorable: true)
+    log_in_as(user)
+    website_payload = [{ "seedurl" => website.url, "inventory_freshness" => { "status" => "confirmed_discovery",
+      "label" => "Verified", "latest_list_refresh_at" => "2026-11-23T13:25:00Z",
+      "new_event_age_days" => 0, "selected_event_urls_missing" => 0 } }]
+    requests = []
+    with_dashboard_config do
+      Condenser::API.stub :websites, ->(**params) { requests << params; website_payload } do
+        Condenser::API.stub :dashboard_metrics, {} do
+          get dashboard_path
+        end
+      end
+    end
+
+    assert_response :success
+    assert_equal [{ inventory_freshness: "true" }], requests
+    assert_select "[data-inventory-status='confirmed_discovery']", text: "Verified"
+    assert_select "td.dashboard-inventory time[datetime]", count: 1
+    assert_select "td.dashboard-inventory small", text: "New event 0d"
+    assert_select "td.dashboard-inventory small", text: "0 outside lists"
+  end
+
+  test "dashboard retains event age for an older Condenser without freshness metrics" do
+    user = create_user("dashboard-older-inventory")
+    website = create_website(user: user, slug: "dashboard-older", monitorable: true)
+    log_in_as(user)
+    render_dashboard_row(dashboard_row(website).merge(condenser_available: true, metrics: { days_since_last_webpage_label: 17 }))
+
+    assert_response :success
+    assert_select "td.dashboard-inventory small", text: "New event 17d · Inventory unavailable"
   end
 
   test "measured zero publishability remains visible when events exist" do

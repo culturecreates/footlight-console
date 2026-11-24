@@ -7,6 +7,7 @@ class DashboardBuilder
     "updates"     => ->(w,m,c) { c["updates"].to_i },
     "pipeline"    => ->(w,m,c) { m[:pipeline_health].to_i },
     "activity"    => ->(w,m,c) { c["statements_refreshed_24hr"].to_i },
+    "inventory_age" => ->(w,m,c) { c.dig("inventory_freshness", "new_event_age_days") || m[:days_since_last_webpage] || Float::INFINITY },
     "health"      => ->(w,m,c) { m[:health_score].to_i },
     "publishable" => ->(w,m,c) { m[:publishable_ratio].to_i },
     "horizon"     => ->(w,m,c) { m[:event_horizon_days].to_i },
@@ -22,7 +23,7 @@ class DashboardBuilder
 
     @condenser_websites = condenser.websites
     @metrics_index      = condenser.metrics
-    @condenser_available = condenser.available?
+    @condenser_available = @condenser_websites.present?
 
     @condenser_index = @condenser_websites.index_by { |c| c["seedurl"] }
     @metrics_index   = @metrics_index.with_indifferent_access

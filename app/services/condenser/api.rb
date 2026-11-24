@@ -248,7 +248,7 @@ module Condenser
         }.freeze
       },
 
-      websites: { method: :get, path: "/websites.json" }
+      websites: { method: :get, path: "/websites.json", params: [:inventory_freshness] }
 
     }.freeze
 

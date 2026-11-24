@@ -144,6 +144,12 @@ module ApplicationHelper
     {}
   end
 
+  def dashboard_inventory_timestamp(value)
+    Time.iso8601(value.to_s).in_time_zone if value.present?
+  rescue ArgumentError
+    nil
+  end
+
   def dashboard_sort_link(column, label, html_options = {})
     current_sort = @current_sort || "website"
     current_dir  = @current_dir  || "asc"

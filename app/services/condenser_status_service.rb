@@ -25,7 +25,7 @@ class CondenserStatusService
   private
 
   def fetch_websites
-    result = @client.websites
+    result = @client.websites(inventory_freshness: "true")
     return result if result.is_a?(Array)
 
     Rails.logger.warn("Condenser returned invalid websites payload")

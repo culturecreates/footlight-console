@@ -124,8 +124,8 @@
               <tr class="dashboard-groups">
                 <th colspan="4" scope="colgroup" class="group-website">Website</th>
                 <th colspan="4" scope="colgroup" class="group-quality">Content Quality</th>
-                <th colspan="2" scope="colgroup" class="group-scheduling">Scheduling</th>
-                <th colspan="2" scope="colgroup" class="group-pipeline pipeline-column">Pipeline</th>
+                <th colspan="3" scope="colgroup" class="group-scheduling">Scheduling</th>
+                <th scope="col" class="group-pipeline pipeline-column">Pipeline</th>
                 <th scope="col" class="is-hidden-mobile"></th>
               </tr>
               <tr>
@@ -145,8 +145,8 @@
                 <th scope="col"><%= dashboard_sort_link("publishable", "Publishable") %></th>
                 <th scope="col"><%= dashboard_sort_link("overdue", "Overdue") %></th>
                 <th scope="col"><%= dashboard_sort_link("horizon", "Horizon") %></th>
+                <th scope="col"><%= dashboard_sort_link("inventory_age", "Inventory freshness", title: "Sort by age of the newest event webpage") %></th>
                 <th scope="col" class="pipeline-column"><%= dashboard_sort_link("pipeline", "Pipeline") %></th>
-                <th scope="col" class="pipeline-column"><%= dashboard_sort_link("activity", "New event age", title: "Days since a new event webpage was discovered") %></th>
                 <th scope="col" class="is-hidden-mobile"></th>
               </tr>
             </thead>
@@ -238,6 +238,11 @@
 
                   <td><%= metrics[:event_horizon_label] || "—" %></td>
 
+                  <td class="dashboard-inventory">
+                    <%= render "inventory_freshness", inventory: condenser_stats["inventory_freshness"],
+                      fallback_age: metrics[:days_since_last_webpage_label] %>
+                  </td>
+
                   <!-- Detailed diagnostics run only when this link is opened. -->
                   <td class="pipeline-column">
                     <% if website.monitorable? %>
@@ -246,8 +251,6 @@
                       —
                     <% end %>
                   </td>
-
-                  <td class="pipeline-column"><%= metrics[:days_since_last_webpage_label] || "—" %></td>
 
                   <td class="is-hidden-mobile">
                     <div class="dashboard-actions">

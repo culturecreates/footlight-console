@@ -1,0 +1,24 @@
+<% if inventory.is_a?(Hash) && inventory["status"].present? %>
+  <% tone = if inventory["status"] == "confirmed_discovery"
+    "is-success"
+  elsif %w[stale discovery_unverified discovery_pending_import].include?(inventory["status"])
+    "is-warning"
+  else
+    "is-light"
+  end %>
+  <span class="tag <%= tone %>" data-inventory-status="<%= inventory["status"] %>"><%= inventory["label"] %></span>
+  <% if (refreshed_at = dashboard_inventory_timestamp(inventory["latest_list_refresh_at"])) %>
+    <%= time_tag refreshed_at, refreshed_at.strftime("%b %-d %H:%M"), title: "Latest paired ResourceList refresh · #{refreshed_at}" %>
+  <% end %>
+  <br>
+  <small title="Age of the last event webpage added, including imported or manually added events">
+    New event <%= inventory["new_event_age_days"].nil? ? "—" : "#{inventory["new_event_age_days"]}d" %>
+  </small>
+  · <small title="Publishable URLs still selected for a Thorough transition that match neither URL nor RDF URI in verified ResourceLists">
+    <%= inventory["selected_event_urls_missing"].nil? ? "Outside lists unknown" : "#{inventory["selected_event_urls_missing"]} outside lists" %>
+  </small>
+<% elsif fallback_age.present? %>
+  <small>New event <%= fallback_age %>d · Inventory unavailable</small>
+<% else %>
+  <span title="Inventory freshness unavailable">—</span>
+<% end %>
