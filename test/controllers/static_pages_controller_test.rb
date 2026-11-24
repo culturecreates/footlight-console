@@ -68,6 +68,7 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select ".dashboard-site .tag", 0
+    assert_select "tbody td:nth-child(2)", text: "—"
     assert_select "tbody td:nth-child(4)", text: /228\s*\/\s*211/
     assert_select "tbody td:nth-child(7)", text: "—"
     assert_select "tbody td:nth-child(8)", text: "—"
@@ -126,7 +127,8 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     website = create_website(user: user, slug: "dashboard-unpublishable", monitorable: true)
     log_in_as(user)
     row = dashboard_row(website).merge(
-      condenser_available: true, metrics: { total_webpages: 10, health_score: 0, publishable_ratio: 0 }
+      condenser_available: true, condenser: { "event_pages" => 10, "publishable_event_pages" => 0, "publishable_event_percentage" => 0 },
+      metrics: { total_webpages: 10, health_score: 0, publishable_ratio: 0 }
     )
 
     render_dashboard_row(row)
@@ -134,6 +136,38 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select ".dashboard-site .tag", 0
     assert_select "tbody td:nth-child(8)", text: "0%"
+  end
+
+  test "dashboard sorts event pages and fractional publishability from Condenser" do
+    user = create_user("dashboard-event-metric-user")
+    low = create_website(user: user, slug: "z-low", monitorable: true)
+    high = create_website(user: user, slug: "a-high", monitorable: true)
+    empty = create_website(user: user, slug: "m-empty", monitorable: true)
+    log_in_as(user)
+    websites = [
+      { "seedurl" => low.url, "webpages" => 99, "event_pages" => 4, "publishable_event_pages" => 3, "publishable_event_percentage" => 75.0 },
+      { "seedurl" => high.url, "webpages" => 83, "event_pages" => 83, "publishable_event_pages" => 63, "publishable_event_percentage" => 63.0 * 100 / 83 },
+      { "seedurl" => empty.url, "webpages" => 400, "event_pages" => 0, "publishable_event_pages" => 0, "publishable_event_percentage" => nil }
+    ]
+    stale_metrics = { low.url => { "total_webpages" => 99, "publishable_ratio" => 15.0 } }
+    with_dashboard_config do
+      Condenser::API.stub :websites, ->(**) { websites } do
+        Condenser::API.stub :dashboard_metrics, stale_metrics do
+          [["webpages", "asc", %w[0 4 83]], ["webpages", "desc", %w[83 4 0]],
+           ["publishable", "asc", %w[75% 75.9% —]], ["publishable", "desc", %w[75.9% 75% —]]].each do |sort, dir, expected|
+            get dashboard_path(sort: sort, dir: dir)
+            assert_response :success
+            column = sort == "webpages" ? 2 : 8
+            actual = Nokogiri::HTML(response.body).css("tbody tr td:nth-child(#{column})").map { |cell| cell.text.strip }
+            assert_equal expected, actual
+          end
+          assert_select "thead th a[href*='sort=webpages']", text: "Event pages"
+          assert_select "thead th a[href*='sort=publishable']", text: "% Publishable"
+          row = Nokogiri::HTML(response.body).css("tbody tr").find { |entry| entry.at_css("td:first-child").text.include?(low.url) }
+          assert_equal "75%", row.at_css("td:nth-child(7)").text.strip
+        end
+      end
+    end
   end
 
   private
@@ -154,7 +188,7 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
 
   def with_dashboard_config
     Rails.application.stub :config_for, { "condenser" => { "url" => "http://example.test" } } do
-      yield
+      Rails.stub(:cache, ActiveSupport::Cache::MemoryStore.new) { yield }
     end
   end
 

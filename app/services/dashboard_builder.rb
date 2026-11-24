@@ -1,7 +1,7 @@
 class DashboardBuilder
   SORT_COLUMNS = {
     "website"     => ->(w,_,_) { w.url },
-    "webpages"    => ->(w,m,c) { c["webpages"].to_i },
+    "webpages"    => ->(w,m,c) { c["event_pages"] },
     "statements"  => ->(w,m,c) { c["statements_grouped"].to_i },
     "flags"       => ->(w,m,c) { c["flags"].to_i },
     "updates"     => ->(w,m,c) { c["updates"].to_i },
@@ -9,7 +9,7 @@ class DashboardBuilder
     "activity"    => ->(w,m,c) { c["statements_refreshed_24hr"].to_i },
     "inventory_age" => ->(w,m,c) { c.dig("inventory_freshness", "new_event_age_days") || m[:days_since_last_webpage] || Float::INFINITY },
     "health"      => ->(w,m,c) { m[:health_score].to_i },
-    "publishable" => ->(w,m,c) { m[:publishable_ratio].to_i },
+    "publishable" => ->(w,m,c) { c["publishable_event_percentage"] },
     "horizon"     => ->(w,m,c) { m[:event_horizon_days].to_i },
     "overdue"     => ->(w,m,c) { m[:days_overdue].to_i }
   }.freeze
@@ -27,6 +27,14 @@ class DashboardBuilder
 
     @condenser_index = @condenser_websites.index_by { |c| c["seedurl"] }
     @metrics_index   = @metrics_index.with_indifferent_access
+    @condenser_index.each do |seedurl, site|
+      next unless site.key?("event_pages")
+
+      @metrics_index[seedurl] = (@metrics_index[seedurl] || {}).merge(
+        "total_webpages" => site["event_pages"],
+        "publishable_ratio" => site["publishable_event_percentage"]
+      )
+    end
 
     @metrics_interpreter =
       MetricsInterpreter.new(@metrics_index, @condenser_websites)
@@ -58,16 +66,12 @@ class DashboardBuilder
   def sort_rows(rows)
     sort_proc = SORT_COLUMNS[@sort] || SORT_COLUMNS["website"]
 
-    rows = rows.sort_by do |row|
-      w = row[:website]
-      m = row[:metrics]
-      c = row[:condenser]
-
-      value = sort_proc.call(w, m, c)
-      [value, w.url]
+    valued_rows = rows.map do |row|
+      [sort_proc.call(row[:website], row[:metrics], row[:condenser]), row]
     end
-
-    rows.reverse! if @dir == "desc"
-    rows
+    known, unknown = valued_rows.partition { |value, _row| !value.nil? }
+    known.sort_by! { |value, row| [value, row[:website].url] }
+    known.reverse! if @dir == "desc"
+    (known + unknown).map(&:last)
   end
 end

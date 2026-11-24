@@ -107,7 +107,7 @@
 
         <p class="content is-small has-text-grey mb-0">
           <strong>Health</strong> reflects event data quality.
-          <strong>Publishable</strong> shows how much content is ready for publication.
+          <strong>% Publishable</strong> is the share of event pages ready for publication.
           Pipeline diagnostics help detect scraping or ingestion issues.
         </p>
       </div>
@@ -130,7 +130,7 @@
               </tr>
               <tr>
                 <th scope="col"><%= dashboard_sort_link("website", t(:website)) %></th>
-                <th scope="col"><%= dashboard_sort_link("webpages", t(:webpages)) %></th>
+                <th scope="col"><%= dashboard_sort_link("webpages", "Event pages") %></th>
                 <th scope="col"><%= dashboard_sort_link("statements", "Statements") %></th>
                 <th scope="col" class="is-hidden-mobile" title="Statements refreshed / updated in the last 24 hours">24h activity</th>
                 <th scope="col"><%= dashboard_sort_link("flags", t(:flags)) %></th>
@@ -142,7 +142,7 @@
                         title: "Condenser: #{condenser_url} — #{condenser_ok ? 'responding' : 'not responding'}"
                       ) %>
                 </th>
-                <th scope="col"><%= dashboard_sort_link("publishable", "Publishable") %></th>
+                <th scope="col"><%= dashboard_sort_link("publishable", "% Publishable", title: "Publishable event pages divided by all event pages") %></th>
                 <th scope="col"><%= dashboard_sort_link("overdue", "Overdue") %></th>
                 <th scope="col"><%= dashboard_sort_link("horizon", "Horizon") %></th>
                 <th scope="col"><%= dashboard_sort_link("inventory_age", "Inventory freshness", title: "Sort by age of the newest event webpage") %></th>
@@ -158,7 +158,8 @@
                 <% condenser_stats = row[:condenser] %>
                 <% metrics = row[:metrics] %>
                 <% health = metrics[:health_score] %>
-                <% publishable = metrics[:publishable_ratio] %>
+                <% event_count = condenser_stats["event_pages"] %>
+                <% publishable = condenser_stats["publishable_event_percentage"] %>
 
                 <tr>
                   <td>
@@ -178,7 +179,7 @@
                     </div>
                   </td>
 
-                  <td class="has-text-right"><%= condenser_stats["webpages"] %></td>
+                  <td class="has-text-right"><%= event_count.nil? ? "—" : number_with_delimiter(event_count) %></td>
                   <td class="has-text-right"><%= condenser_stats["statements_grouped"] %></td>
 
                   <td class="is-hidden-mobile">
@@ -209,12 +210,11 @@
                   <td>
                     <% if !condenser_available || publishable.nil? %>
                       —
-                    <% elsif publishable >= 95 %>
-                      <span class="has-text-success"><%= publishable %>%</span>
-                    <% elsif publishable >= 85 %>
-                      <span class="has-text-warning"><%= publishable %>%</span>
                     <% else %>
-                      <span class="has-text-danger"><%= publishable %>%</span>
+                      <% tone = publishable >= 95 ? "success" : (publishable >= 85 ? "warning" : "danger") %>
+                      <span class="has-text-<%= tone %>" title="<%= condenser_stats["publishable_event_pages"] %> of <%= event_count %> event pages publishable">
+                        <%= number_to_percentage(publishable, precision: 1, strip_insignificant_zeros: true) %>
+                      </span>
                     <% end %>
                   </td>
 
