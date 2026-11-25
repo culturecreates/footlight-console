@@ -3,6 +3,7 @@ class UsersController < ApplicationController
                                         :following, :followers, :license]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
+  before_action :registration_closed, only: [:new, :create]
 
   def index
     @users = User.order(login_at: :DESC, created_at: :DESC)
@@ -72,6 +73,10 @@ class UsersController < ApplicationController
   end
 
   private
+
+    def registration_closed
+      head :not_found
+    end
 
     def user_params
       params.require(:user).permit(:name, :email, :password,
