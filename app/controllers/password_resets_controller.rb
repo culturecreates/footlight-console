@@ -7,31 +7,31 @@ class PasswordResetsController < ApplicationController
   end
 
   def create
-    @user = User.find_by(email: params[:password_reset][:email].downcase)
-    if @user
+    email = params.dig(:password_reset, :email).to_s.strip.downcase
+    @user = User.find_by(email: email)
+
+    if @user&.activated?
       @user.create_reset_digest
       @user.send_password_reset_email
-      flash[:info] = "Email sent with password reset instructions"
-      redirect_to root_url
-    else
-      flash.now[:danger] = "Email address not found"
-      render 'new'
     end
+
+    flash[:info] = "If the account is active, password reset instructions will be sent."
+    redirect_to root_url
   end
 
   def edit
   end
 
   def update
-    if params[:user][:password].empty?                  # Case (3)
+    if params.dig(:user, :password).to_s.empty?                                         # Case (3)
       @user.errors.add(:password, :blank)
       render 'edit'
-    elsif @user.update(user_params)          # Case (4)
+    elsif @user.update(user_params.merge(reset_digest: nil, reset_sent_at: nil))        # Case (4)
       log_in @user
       flash[:success] = "Password has been reset."
       redirect_to @user
     else
-      render 'edit'                                     # Case (2)
+      render 'edit'                                                                     # Case (2)
     end
   end
 
