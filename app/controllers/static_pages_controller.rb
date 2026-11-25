@@ -15,30 +15,9 @@ class StaticPagesController < ApplicationController
 
     @websites = current_user.websites
 
-    @dashboard_rows =
-      DashboardBuilder.new(
-        websites: @websites,
-        helpers: helpers,
-        sort: sort,
-        dir: dir
-      ).build
-
-    @pipeline_statuses = {}
-
-    # @websites.each do |website|
-    #   next unless website.monitorable?
-
-    #   events_data = safe_events(
-    #     seedurl: website.url,
-    #     start_date: EventsController::OLDEST_DATE
-    #   )
-    #   rows = PipelineBuilder.call(
-    #     events: Array(events_data["events"]),
-    #     website: website
-    #   )
-
-    #   @pipeline_statuses[website.id] = PipelineAggregateStatus.call(rows: rows)
-    # end
+    builder = DashboardBuilder.new(websites: @websites, helpers: helpers, sort: sort, dir: dir)
+    @dashboard_rows = builder.build
+    @dashboard_data_as_of = builder.data_as_of
   end
 
   def about

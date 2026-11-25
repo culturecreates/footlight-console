@@ -90,13 +90,12 @@ class WebsitesController < ApplicationController
       seedurl: @website.url,
       start_date: EventsController::OLDEST_DATE
     )
-    events = Array(events_data["events"])
+    if events_data["unavailable"]
+      @pipeline_unavailable = true
+      return render :pipeline, status: :service_unavailable
+    end
 
-    @rows = PipelineBuilder.call(
-      events: events,
-      website: @website
-    )
-    @pipeline_data = @rows
+    @rows = PipelineBuilder.call(events: events_data.fetch("events"), website: @website)
   rescue ActiveRecord::RecordNotFound
     head :not_found
   end

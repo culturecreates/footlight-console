@@ -128,14 +128,15 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     log_in_as(user)
     row = dashboard_row(website).merge(
       condenser_available: true, condenser: { "event_pages" => 10, "publishable_event_pages" => 0, "publishable_event_percentage" => 0 },
-      metrics: { total_webpages: 10, health_score: 0, publishable_ratio: 0 }
+      metrics: { total_webpages: 10, publishable_ratio: 0 }
     )
 
     render_dashboard_row(row)
 
     assert_response :success
     assert_select ".dashboard-site .tag", 0
-    assert_select "tbody td:nth-child(8)", text: "0%"
+    assert_select "tbody td:nth-child(7)", text: "0%"
+    assert_select "thead th", text: "Health", count: 0
   end
 
   test "dashboard sorts event pages and fractional publishability from Condenser" do
@@ -157,7 +158,7 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
            ["publishable", "asc", %w[75% 75.9% —]], ["publishable", "desc", %w[75.9% 75% —]]].each do |sort, dir, expected|
             get dashboard_path(sort: sort, dir: dir)
             assert_response :success
-            column = sort == "webpages" ? 2 : 8
+            column = sort == "webpages" ? 2 : 7
             actual = Nokogiri::HTML(response.body).css("tbody tr td:nth-child(#{column})").map { |cell| cell.text.strip }
             assert_equal expected, actual
           end
@@ -170,6 +171,32 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test "dashboard renders and sorts confirmed schedule lateness and dates the bulk snapshot" do
+    user = create_user("dashboard-schedule-user")
+    schedule = { "on-time" => 0, "warning" => 1, "overdue" => 5, "unverified" => nil }
+    websites = schedule.keys.map do |slug|
+      create_website(user: user, slug: slug, monitorable: true)
+      { "seedurl" => slug, "data_as_of" => "2026-11-24T15:10:00Z" }
+    end
+    metrics = schedule.transform_values { |days| { "days_overdue" => days, "data_as_of" => "2026-11-24T15:00:00Z" } }
+    log_in_as(user)
+
+    with_dashboard_config do
+      Condenser::API.stub :websites, ->(**) { websites } do
+        Condenser::API.stub :dashboard_metrics, metrics do
+          get dashboard_path(sort: "overdue", dir: "desc")
+        end
+      end
+    end
+
+    assert_response :success
+    actual = Nokogiri::HTML(response.body).css(".dashboard-overdue").map { |cell| cell.text.strip }
+    assert_equal ["5d late", "1d late", "On time", "—"], actual
+    assert_select ".dashboard-overdue .is-danger", text: "5d late"
+    assert_select ".dashboard-overdue .is-warning", text: "1d late"
+    assert_select "time[datetime='2026-11-24T10:00:00-05:00']", text: "Nov 24, 2026 10:00 EST"
+  end
+
   private
 
   def render_dashboard_row(row)
@@ -180,7 +207,7 @@ class StaticPagesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  FakeDashboardBuilder = Struct.new(:rows) do
+  FakeDashboardBuilder = Struct.new(:rows, :data_as_of) do
     def build
       rows
     end

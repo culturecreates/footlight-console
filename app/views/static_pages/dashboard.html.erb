@@ -106,9 +106,15 @@
         </div>
 
         <p class="content is-small has-text-grey mb-0">
-          <strong>Health</strong> reflects event data quality.
-          <strong>% Publishable</strong> is the share of event pages ready for publication.
-          Pipeline diagnostics help detect scraping or ingestion issues.
+          <strong>Data as of</strong>
+          <% if @dashboard_data_as_of %>
+            <% stamp = @dashboard_data_as_of.in_time_zone %>
+            <%= time_tag(stamp, stamp.strftime("%b %-d, %Y %H:%M %Z"),
+                  title: "Oldest available Condenser snapshot time. Individual refreshes may be older.") %>
+          <% else %>
+            <span>unavailable</span>
+          <% end %>
+          <% if Rails.env.staging? %> · Staging<% end %>
         </p>
       </div>
     </div>
@@ -123,7 +129,7 @@
               <!-- Group headings match the columns below. -->
               <tr class="dashboard-groups">
                 <th colspan="4" scope="colgroup" class="group-website">Website</th>
-                <th colspan="4" scope="colgroup" class="group-quality">Content Quality</th>
+                <th colspan="3" scope="colgroup" class="group-quality">Content Quality</th>
                 <th colspan="3" scope="colgroup" class="group-scheduling">Scheduling</th>
                 <th scope="col" class="group-pipeline pipeline-column">Pipeline</th>
                 <th scope="col" class="is-hidden-mobile"></th>
@@ -135,18 +141,11 @@
                 <th scope="col" class="is-hidden-mobile" title="Statements refreshed / updated in the last 24 hours">24h activity</th>
                 <th scope="col"><%= dashboard_sort_link("flags", t(:flags)) %></th>
                 <th scope="col"><%= dashboard_sort_link("updates", t(:updates)) %></th>
-                <th scope="col">
-                  <%= dashboard_sort_link(
-                        "health",
-                        "Health#{condenser_ok ? '' : ' ⚠️'}".html_safe,
-                        title: "Condenser: #{condenser_url} — #{condenser_ok ? 'responding' : 'not responding'}"
-                      ) %>
-                </th>
                 <th scope="col"><%= dashboard_sort_link("publishable", "% Publishable", title: "Publishable event pages divided by all event pages") %></th>
-                <th scope="col"><%= dashboard_sort_link("overdue", "Overdue") %></th>
-                <th scope="col"><%= dashboard_sort_link("horizon", "Horizon") %></th>
+                <th scope="col"><%= dashboard_sort_link("overdue", "Overdue", title: "Time beyond the monitored ResourceList refresh or import deadline, rounded up to days") %></th>
+                <th scope="col"><%= dashboard_sort_link("horizon", "Archive horizon", title: "Days until the latest Event webpage archive date in this snapshot") %></th>
                 <th scope="col"><%= dashboard_sort_link("inventory_age", "Inventory freshness", title: "Sort by age of the newest event webpage") %></th>
-                <th scope="col" class="pipeline-column"><%= dashboard_sort_link("pipeline", "Pipeline") %></th>
+                <th scope="col" class="pipeline-column">Pipeline</th>
                 <th scope="col" class="is-hidden-mobile"></th>
               </tr>
             </thead>
@@ -157,7 +156,6 @@
                 <% website = row[:website] %>
                 <% condenser_stats = row[:condenser] %>
                 <% metrics = row[:metrics] %>
-                <% health = metrics[:health_score] %>
                 <% event_count = condenser_stats["event_pages"] %>
                 <% publishable = condenser_stats["publishable_event_percentage"] %>
 
@@ -196,18 +194,6 @@
                   <td class="has-text-right"><%= condenser_available ? condenser_stats["updates"] : "—" %></td>
 
                   <td>
-                    <% if !condenser_available || !health %>
-                      —
-                    <% elsif health >= 95 %>
-                      <span class="tag is-success"><%= health.round %>%</span>
-                    <% elsif health >= 85 %>
-                      <span class="tag is-warning"><%= health.round %>%</span>
-                    <% else %>
-                      <span class="tag is-danger"><%= health.round %>%</span>
-                    <% end %>
-                  </td>
-
-                  <td>
                     <% if !condenser_available || publishable.nil? %>
                       —
                     <% else %>
@@ -218,21 +204,14 @@
                     <% end %>
                   </td>
 
-                  <td>
-                    <% if condenser_available %>
-                      <% risk = metrics[:schedule_risk_level] %>
-                      <% overdue_days = metrics[:days_overdue] || 0 %>
-                      <% if risk == :ok %>
-                        <span class="tag is-success">On time</span>
-                      <% elsif risk == :warning %>
-                        <span class="tag is-warning"><%= overdue_days %>d late</span>
-                      <% elsif risk == :critical %>
-                        <span class="tag is-danger"><%= overdue_days %>d late</span>
-                      <% else %>
-                        —
-                      <% end %>
+                  <td class="dashboard-overdue">
+                    <% risk = metrics[:schedule_risk_level] if condenser_available %>
+                    <% if risk == :ok %>
+                      <span class="tag is-success is-light">On time</span>
+                    <% elsif %i[warning critical].include?(risk) %>
+                      <span class="tag <%= risk == :critical ? "is-danger" : "is-warning" %> is-light"><%= metrics[:days_overdue] %>d late</span>
                     <% else %>
-                      —
+                      <span title="No conclusive scheduled ResourceList completion evidence">—</span>
                     <% end %>
                   </td>
 
@@ -276,11 +255,12 @@
         <%= render 'about_blurb' %>
         <br>
         <br>
-        <%= link_to "Join", signup_path, class: "button is-primary is-large" %>
-        <p>
-          <br>
-          Already a member? <%= link_to "Login", login_path %>
-        </p>
+        <% if public_signup_enabled? %>
+          <%= link_to "Join", signup_path, class: "button is-primary is-large" %>
+          <p class="mt-4">Already a member? <%= link_to "Login", login_path %></p>
+        <% else %>
+          <%= link_to "Login", login_path, class: "button is-primary is-large" %>
+        <% end %>
       </div>
     </div>
   </div>

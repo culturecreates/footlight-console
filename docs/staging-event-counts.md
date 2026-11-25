@@ -21,4 +21,6 @@ Staging verification after both branches are deployed:
 3. Compare the same date scope and snapshot; production may have changed since the staging database copy. Monitoring event-page totals can differ from upcoming event totals grouped by URI.
 4. Confirm sites absent from the monitoring JSON show unknown metrics while retaining available webpage/statement/activity statistics.
 
-This change does not alter monitorable flags in either database or redefine Health, Publishable, scheduling risk, or the horizon calculation. Remaining flag assignments and metric-definition improvements are separate follow-up work.
+The dashboard reports publishability once, under **% Publishable**. Archive horizon uses Event webpage archive dates. Overdue uses the observed ResourceList refresh and import schedule, with a dash when monitoring has no conclusive evidence. **Data as of** shows the oldest timestamp returned by the bulk Condenser endpoints, so it can be older than the time the Console page was opened. Pipeline diagnoses are available on demand and incomplete results offer a retry.
+
+The Rails staging environment disables public signup. Existing accounts can still sign in and reset passwords.

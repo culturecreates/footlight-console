@@ -56,24 +56,6 @@ class MetricsInterpreter
   end
 
 
-  # --------------------------------------------------------------------------------------------------------------------
-  # health_score
-  #
-  # Computes data health score. Currently equivalent to publishable ratio.
-  # Returns nil if the website has no webpages.
-  # --------------------------------------------------------------------------------------------------------------------
-
-  def health_score(raw)
-
-    publishable_ratio = raw["publishable_ratio"]&.to_f
-    total_webpages    = raw["total_webpages"]&.to_i
-
-    return nil if total_webpages.nil? || total_webpages.zero?
-
-    publishable_ratio
-  end
-
-
   # ====================================================================================================================
   # NORMALIZATION HELPERS
   # ====================================================================================================================
@@ -141,7 +123,13 @@ class MetricsInterpreter
 
     total_webpages    = raw["total_webpages"]&.to_i
     publishable_ratio = raw["publishable_ratio"]&.to_f
-    days_overdue      = raw["days_overdue"]&.to_i
+    days_overdue      = Integer(raw["days_overdue"].to_s, 10, exception: false)
+    days_overdue      = nil if days_overdue&.negative?
+    schedule_risk = case days_overdue
+    when 0 then :ok
+    when 1..3 then :warning
+    when 4.. then :critical
+    end
     event_horizon_raw = raw["event_horizon_days"]&.to_i
 
 
@@ -203,6 +191,7 @@ class MetricsInterpreter
       publishable_ratio: publishable_ratio,
 
       days_overdue: days_overdue,
+      schedule_risk_level: schedule_risk,
 
       event_horizon_days: event_horizon_raw,
       event_horizon_label: event_horizon_label,
@@ -211,9 +200,7 @@ class MetricsInterpreter
       days_since_last_webpage_label: days_since_last_webpage_label,
 
       pipeline_health: pipeline_health_score,
-      pipeline_warning: pipeline_warning,
-
-      health_score: health_score(raw)
+      pipeline_warning: pipeline_warning
     }
 
   end

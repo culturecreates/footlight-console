@@ -1,10 +1,35 @@
 require 'test_helper'
+require 'minitest/mock'
 
 class UsersSignupTest < ActionDispatch::IntegrationTest
 
   # def setup
   #   ActionMailer::Base.deliveries.clear
   # end
+
+  test "staging disables public signup and keeps sign in and password recovery" do
+    Rails.env.stub(:staging?, true) do
+      get signup_path
+      assert_response :not_found
+      get new_user_path
+      assert_response :not_found
+
+      assert_no_difference "User.count" do
+        post users_path, params: { user: { name: "Staging User", email: "staging@example.com",
+          password: "password", password_confirmation: "password" } }
+      end
+      assert_response :not_found
+
+      get dashboard_path
+      assert_response :success
+      assert_select "a[href=?]", signup_path, count: 0
+      assert_select "a[href=?]", login_path, minimum: 1
+      get login_path
+      assert_response :success
+      assert_select "a[href=?]", signup_path, count: 0
+      assert_select "a[href=?]", new_password_reset_path, text: "Forgot password"
+    end
+  end
 
   test "invalid signup information" do
     get signup_path

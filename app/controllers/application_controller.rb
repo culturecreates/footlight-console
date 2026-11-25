@@ -6,6 +6,8 @@ class ApplicationController < ActionController::Base
   include CondenserSafe
   default_form_builder BulmaFormBuilder
 
+  helper_method :public_signup_enabled?
+
   before_action :set_cache_headers, :set_event_timezone
 
   private
@@ -27,6 +29,10 @@ class ApplicationController < ActionController::Base
     @event_timezone ||= cookies[:event_timezone] 
   end
  
+  def public_signup_enabled?
+    !Rails.env.staging?
+  end
+
   # Confirms a logged-in user.
   def logged_in_user
     unless logged_in?

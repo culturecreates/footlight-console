@@ -1,38 +1,38 @@
-<h1>Pipeline Status</h1>
+<section class="section">
+  <div class="container">
+    <h1 class="title">Pipeline diagnostics · <%= display_website_url(@website.url) %></h1>
+    <p class="mb-4">
+      <%= link_to "Dashboard", dashboard_path %> ·
+      <%= link_to "Review website events", events_path(seedurl: @website.url) %>
+    </p>
 
-<% rows = Array(@rows) %>
-
-<% if rows.empty? %>
-  <p>No events found</p>
-<% end %>
-
-<table>
-  <thead>
-    <tr>
-      <th>Event</th>
-      <th>Status</th>
-      <th>Diagnosis</th>
-    </tr>
-  </thead>
-
-<tbody>
-  <% rows.each do |row| %>
-    <% event = row[:event] %>
-    <% status = row[:status] || {} %>
-
-    <% event_id =
-      if event.respond_to?(:id)
-        event.id
-      elsif event.respond_to?(:[])
-        event[:id] || event["id"]
-      end
-    %>
-
-    <tr>
-      <td><%= event_id || "-" %></td>
-      <td><%= status[:status] %></td>
-      <td><%= status[:diagnosis] %></td>
-    </tr>
-  <% end %>
-</tbody>
-</table>
+    <% if @pipeline_unavailable %>
+      <p class="notification is-warning is-light" role="alert">
+        Condenser could not provide a complete event list. <%= link_to "Retry diagnostics", pipeline_website_path(@website) %>.
+      </p>
+    <% elsif @rows.empty? %>
+      <p>No events found</p>
+    <% else %>
+      <p class="mb-3"><%= pluralize(@rows.size, "event") %> checked ·
+        <%= @rows.count { |row| row.dig(:status, :status) != :ok } %> needing attention</p>
+      <table class="table is-fullwidth">
+        <thead>
+          <tr><th scope="col">Event</th><th scope="col">Status</th><th scope="col">Diagnosis</th></tr>
+        </thead>
+        <tbody>
+          <% @rows.each do |row| %>
+            <% event = row.fetch(:event) %>
+            <% status = row.fetch(:status) %>
+            <% title = event.respond_to?(:title) ? strip_tags(display_statement(event.title)) : nil %>
+            <% label = title.presence || event.id || "Unnamed event" %>
+            <tr>
+              <td><%= event.respond_to?(:rdf_uri) && event.rdf_uri.present? ? link_to(label, event_path(id: event.rdf_uri).gsub(".", "%2E")) : label %></td>
+              <td><%= status[:status].to_s.humanize %></td>
+              <td><%= status[:diagnosis] %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% end %>
+  </div>
+</section>

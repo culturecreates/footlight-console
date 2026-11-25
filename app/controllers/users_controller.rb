@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
   before_action :logged_in_user, only: [:index, :edit, :update, :destroy,
                                         :following, :followers, :license]
+  before_action :require_public_signup, only: [:new, :create]
   before_action :correct_user,   only: [:edit, :update]
   before_action :admin_user,     only: :destroy
 
@@ -72,6 +73,10 @@ class UsersController < ApplicationController
   end
 
   private
+
+    def require_public_signup
+      head :not_found unless public_signup_enabled?
+    end
 
     def user_params
       params.require(:user).permit(:name, :email, :password,

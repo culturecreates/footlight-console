@@ -6,19 +6,26 @@
   else
     "is-light"
   end %>
-  <span class="tag <%= tone %>" data-inventory-status="<%= inventory["status"] %>"><%= inventory["label"] %></span>
+  <% status_help = case inventory["status"]
+    when "stale" then "The last verified paired ResourceList refresh is outside its freshness window."
+    when "discovery_unverified" then "Current ResourceList extraction could not be verified."
+    when "discovery_pending_import" then "Verified list URLs are still awaiting import."
+    when "confirmed_discovery" then "A fresh ResourceList extraction and import were verified."
+    else "No event ResourceLists are configured for discovery."
+    end %>
+  <span title="<%= status_help %>" class="tag <%= tone %>" data-inventory-status="<%= inventory["status"] %>"><%= inventory["label"] %></span>
   <% if (refreshed_at = dashboard_inventory_timestamp(inventory["latest_list_refresh_at"])) %>
     <%= time_tag refreshed_at, refreshed_at.strftime("%b %-d %H:%M"), title: "Latest paired ResourceList refresh · #{refreshed_at}" %>
   <% end %>
   <br>
-  <small title="Age of the last event webpage added, including imported or manually added events">
+  <small title="Days since the newest event webpage was added, including manual additions. Performance dates are shown on the event itself.">
     New event <%= inventory["new_event_age_days"].nil? ? "—" : "#{inventory["new_event_age_days"]}d" %>
   </small>
-  · <small title="Publishable URLs still selected for a Thorough transition that match neither URL nor RDF URI in verified ResourceLists">
+  · <small title="<%= inventory["selected_event_urls_missing"].nil? ? "The comparison with verified ResourceLists has no count for this snapshot." : "Eligible event pages that match neither a URL nor RDF URI in the verified ResourceLists." %>">
     <%= inventory["selected_event_urls_missing"].nil? ? "Outside lists unknown" : "#{inventory["selected_event_urls_missing"]} outside lists" %>
   </small>
 <% elsif fallback_age.present? %>
-  <small>New event <%= fallback_age %>d · Inventory unavailable</small>
+  <small title="Days since the newest event webpage was added. ResourceList comparison is unavailable.">New event <%= fallback_age %>d · Inventory unavailable</small>
 <% else %>
   <span title="Inventory freshness unavailable">—</span>
 <% end %>

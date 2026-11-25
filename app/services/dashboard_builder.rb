@@ -5,13 +5,11 @@ class DashboardBuilder
     "statements"  => ->(w,m,c) { c["statements_grouped"].to_i },
     "flags"       => ->(w,m,c) { c["flags"].to_i },
     "updates"     => ->(w,m,c) { c["updates"].to_i },
-    "pipeline"    => ->(w,m,c) { m[:pipeline_health].to_i },
     "activity"    => ->(w,m,c) { c["statements_refreshed_24hr"].to_i },
     "inventory_age" => ->(w,m,c) { c.dig("inventory_freshness", "new_event_age_days") || m[:days_since_last_webpage] || Float::INFINITY },
-    "health"      => ->(w,m,c) { m[:health_score].to_i },
     "publishable" => ->(w,m,c) { c["publishable_event_percentage"] },
-    "horizon"     => ->(w,m,c) { m[:event_horizon_days].to_i },
-    "overdue"     => ->(w,m,c) { m[:days_overdue].to_i }
+    "horizon"     => ->(w,m,c) { m[:event_horizon_days] },
+    "overdue"     => ->(w,m,c) { m[:days_overdue] }
   }.freeze
 
   def initialize(websites:, helpers:, sort:, dir:)
@@ -26,6 +24,7 @@ class DashboardBuilder
     @condenser_available = @condenser_websites.present?
 
     @condenser_index = @condenser_websites.index_by { |c| c["seedurl"] }
+    @bulk_metrics = @metrics_index.values
     @metrics_index   = @metrics_index.with_indifferent_access
     @condenser_index.each do |seedurl, site|
       next unless site.key?("event_pages")
@@ -38,6 +37,16 @@ class DashboardBuilder
 
     @metrics_interpreter =
       MetricsInterpreter.new(@metrics_index, @condenser_websites)
+  end
+
+  def data_as_of
+    timestamps = (@condenser_websites + @bulk_metrics).map do |row|
+      stamp = row["data_as_of"] if row.is_a?(Hash)
+      Time.iso8601(stamp) if stamp.is_a?(String)
+    rescue ArgumentError
+      nil
+    end
+    timestamps.min if timestamps.any? && timestamps.none?(&:nil?)
   end
 
   def build

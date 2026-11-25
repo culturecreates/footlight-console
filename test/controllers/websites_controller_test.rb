@@ -51,8 +51,8 @@ class WebsitesControllerTest < ActionDispatch::IntegrationTest
     website = create_website(user: users(:michael), slug: "pipeline-render", monitorable: true)
     source_events = [{ "id" => 11 }, { "id" => 22 }]
     pipeline_rows = [
-      { event: source_events.first, status: { event_id: 11, status: :broken, diagnosis: "Wringer failed" } },
-      { event: source_events.second, status: { event_id: 22, status: :degraded, diagnosis: "Console review is low" } }
+      { event: PipelineBuilder::PipelineEvent.new(source_events.first, website), status: { event_id: 11, status: :broken, diagnosis: "Wringer failed" } },
+      { event: PipelineBuilder::PipelineEvent.new(source_events.second, website), status: { event_id: 22, status: :degraded, diagnosis: "Console review is low" } }
     ]
     captured_website = nil
     captured_events = nil
@@ -72,13 +72,13 @@ class WebsitesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal website.id, captured_website.id
     assert_equal source_events, captured_events
-    assert_select "h1", "Pipeline Status"
+    assert_select "h1", "Pipeline diagnostics · #{website.url}"
     assert_select "tbody tr", 2
     assert_select "tbody tr:nth-child(1) td:nth-child(1)", text: "11"
-    assert_select "tbody tr:nth-child(1) td:nth-child(2)", text: "broken"
+    assert_select "tbody tr:nth-child(1) td:nth-child(2)", text: "Broken"
     assert_select "tbody tr:nth-child(1) td:nth-child(3)", text: "Wringer failed"
     assert_select "tbody tr:nth-child(2) td:nth-child(1)", text: "22"
-    assert_select "tbody tr:nth-child(2) td:nth-child(2)", text: "degraded"
+    assert_select "tbody tr:nth-child(2) td:nth-child(2)", text: "Degraded"
     assert_select "tbody tr:nth-child(2) td:nth-child(3)", text: "Console review is low"
   end
 
@@ -94,7 +94,7 @@ class WebsitesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_response :success
-    assert_select "h1", "Pipeline Status"
+    assert_select "h1", "Pipeline diagnostics · #{website.url}"
     assert_select "p", text: "No events found"
     assert_select "tbody tr", 0
   end
